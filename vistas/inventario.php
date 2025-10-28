@@ -4,13 +4,9 @@ include_once "../conexion.php";
 include_once "../modelos/categoria_modelo.php"; 
 include_once "../modelos/producto_modelo.php";
 
-// --- LÓGICA PARA MOSTRAR DATOS ---
-// 1. Obtenemos todas las categorías para el formulario
+// Obtenemos los datos para los dropdowns y la tabla
 $categorias = obtenerCategorias($conexion);
-
-// 2. Obtenemos todos los productos para la tabla
 $productos = obtenerProductos($conexion);
-
 ?>
 
 <!DOCTYPE html>
@@ -33,6 +29,11 @@ $productos = obtenerProductos($conexion);
                 <form action="../controladores/registrar_producto.php" method="POST">
                     
                     <div class="mb-3">
+                        <label for="codigo_producto" class="form-label">Código (SKU / Barras):</label>
+                        <input type="text" class="form-control" id="codigo_producto" name="codigo_producto">
+                    </div>
+                    
+                    <div class="mb-3">
                         <label for="nombre_producto" class="form-label">Nombre del Producto:</label>
                         <input type="text" class="form-control" id="nombre_producto" name="nombre_producto" required>
                     </div>
@@ -43,7 +44,7 @@ $productos = obtenerProductos($conexion);
                             <option value="">Seleccione una categoría</option>
                             <?php
                             if ($categorias->num_rows > 0) {
-                                // Reiniciamos el puntero por si acaso (aunque no es estrictamente necesario aquí)
+                                // Reiniciamos el puntero para re-usar la variable $categorias
                                 $categorias->data_seek(0);
                                 while($fila_cat = $categorias->fetch_assoc()) {
                                     echo "<option value='" . $fila_cat['id_categoria'] . "'>" . $fila_cat['nombre'] . "</option>";
@@ -75,16 +76,14 @@ $productos = obtenerProductos($conexion);
 
             <div class="col-md-8">
                 <h3>Inventario Actual</h3>
-                <div class="table-responsive"> <table class="table table-striped table-hover">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
+                                <th>Código</th>
                                 <th>Nombre</th>
-                                <th>Categoría</th>
-                                <th>Precio</th>
-                                <th>Stock</th>
-                                <th>Acciones</th>
-                            </tr>
+                                <th>Categoría</th> <th>Precio</th>   <th>Stock</th>    <th>Acciones</th> </tr>
                         </thead>
                         <tbody>
                             <?php
@@ -93,8 +92,12 @@ $productos = obtenerProductos($conexion);
                                 while($fila_prod = $productos->fetch_assoc()) {
                                     echo "<tr>";
                                     echo "<td>" . $fila_prod['id_producto'] . "</td>";
+                                    echo "<td>" . $fila_prod['codigo'] . "</td>";
                                     echo "<td>" . $fila_prod['nombre_producto'] . "</td>";
-                                    echo "<td>" . $fila_prod['nombre_categoria'] . "</td>";
+                                    
+                                    // ¡AQUÍ ESTÁ LA CELDA CORREGIDA QUE FALTABA!
+                                    echo "<td>" . $fila_prod['nombre_categoria'] . "</td>"; 
+                                    
                                     echo "<td>S/ " . number_format($fila_prod['precio_venta'], 2) . "</td>";
                                     echo "<td>" . $fila_prod['stock'] . "</td>";
                                     echo "<td>
@@ -104,7 +107,7 @@ $productos = obtenerProductos($conexion);
                                     echo "</tr>";
                                 }
                             } else {
-                                echo "<tr><td colspan='6' class='text-center'>No hay productos registrados.</td></tr>";
+                                echo "<tr><td colspan='7' class='text-center'>No hay productos registrados.</td></tr>"; // <-- Colspan es 7
                             }
                             ?>
                         </tbody>
@@ -118,74 +121,42 @@ $productos = obtenerProductos($conexion);
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Función para mostrar alertas de Éxito o Error
         function mostrarAlertas() {
             const urlParams = new URLSearchParams(window.location.search);
             const status = urlParams.get('status');
-
             let title, text, icon;
 
             if (status === 'success') {
-                title = '¡Éxito!';
-                text = 'Producto registrado correctamente.';
-                icon = 'success';
-            } else if (status === 'error') {
-                title = '¡Error!';
-                text = 'Ocurrió un error al registrar el producto.';
-                icon = 'error';
+                title = '¡Éxito!'; text = 'Producto registrado correctamente.'; icon = 'success';
+            } else if (status === 'updated') {
+                title = '¡Actualizado!'; text = 'Producto actualizado correctamente.'; icon = 'success';
             } else if (status === 'deleted') {
-                title = '¡Eliminado!';
-                text = 'El producto se ha eliminado correctamente.';
-                icon = 'success';
-            } else if (status === 'delete_error') {
-                title = '¡Error!';
-                text = 'Ocurrió un error al eliminar el producto.';
-                icon = 'error';
-            } else if (status === 'updated') { // <-- ¡AQUÍ ESTÁ LA CORRECCIÓN!
-                title = '¡Actualizado!';
-                text = 'Producto actualizado correctamente.';
-                icon = 'success';
-            } else if (status === 'update_error') { // <-- ¡AQUÍ ESTÁ LA CORRECCIÓN!
-                title = '¡Error!';
-                text = 'Ocurrió un error al actualizar.';
-                icon = 'error';
+                title = '¡Eliminado!'; text = 'El producto se ha eliminado.'; icon = 'success';
+            } else if (status === 'error' || status === 'update_error' || status === 'delete_error') {
+                title = '¡Error!'; text = 'Ocurrió un error al procesar la solicitud.'; icon = 'error';
+            } else if (status === 'code_exists') {
+                title = '¡Error!'; text = 'El código ingresado ya existe en otro producto.'; icon = 'error';
             } else if (status === 'notfound') {
-                title = '¡Error!';
-                text = 'No se encontró el producto solicitado.';
-                icon = 'error';
+                title = '¡Error!'; text = 'No se encontró el producto solicitado.'; icon = 'error';
             }
 
             if (status) {
-                Swal.fire({
-                    title: title,
-                    text: text,
-                    icon: icon,
-                    timer: 2500,
-                    showConfirmButton: false
-                });
+                Swal.fire({ title: title, text: text, icon: icon, timer: 2500, showConfirmButton: false });
                 window.history.replaceState(null, null, window.location.pathname);
             }
         }
         
-        // Función para confirmar eliminar
         function confirmarEliminarProducto(id) {
             Swal.fire({
-                title: '¿Estás seguro?',
-                text: "¡No podrás revertir esto!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, ¡bórralo!',
-                cancelButtonText: 'Cancelar'
+                title: '¿Estás seguro?', text: "¡No podrás revertir esto!", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, ¡bórralo!', cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = '../controladores/eliminar_producto.php?id=' + id;
                 }
             })
         }
-
-        // Ejecutamos la función de alertas al cargar la página
         document.addEventListener('DOMContentLoaded', mostrarAlertas);
     </script>
 </body>

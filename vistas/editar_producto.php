@@ -1,38 +1,27 @@
 <?php
-// 1. Incluimos los archivos necesarios
 include_once "../conexion.php";
 include_once "../modelos/producto_modelo.php";
-include_once "../modelos/categoria_modelo.php"; // (Para el dropdown)
+include_once "../modelos/categoria_modelo.php";
 
-// 2. Verificamos que se haya enviado un ID
 if (!isset($_GET['id'])) {
     header("Location: ../vistas/inventario.php");
     exit();
 }
-
 $id_producto = $_GET['id'];
-
-// 3. Obtenemos los datos del producto
 $producto = obtenerProductoPorID($conexion, $id_producto);
+$categorias = obtenerCategorias($conexion); // Para el dropdown
 
-// 4. Si el producto no existe, redirigimos
 if (!$producto) {
     header("Location: ../vistas/inventario.php?status=notfound");
     exit();
 }
-
-// 5. Obtenemos TODAS las categorías para el dropdown
-$categorias = obtenerCategorias($conexion);
-
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Producto - Bazar Carolian</title>
-    
+    <title>Editar Producto</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
@@ -42,8 +31,12 @@ $categorias = obtenerCategorias($conexion);
                 <h1 class="mb-4">Editar Producto (ID: <?php echo $producto['id_producto']; ?>)</h1>
                 
                 <form action="../controladores/actualizar_producto.php" method="POST">
-                    
                     <input type="hidden" name="id_producto" value="<?php echo $producto['id_producto']; ?>">
+
+                    <div class="mb-3">
+                        <label for="codigo_producto" class="form-label">Código (SKU / Barras):</label>
+                        <input type="text" class="form-control" id="codigo_producto" name="codigo_producto" value="<?php echo $producto['codigo']; ?>">
+                    </div>
 
                     <div class="mb-3">
                         <label for="nombre_producto" class="form-label">Nombre del Producto:</label>
@@ -55,10 +48,9 @@ $categorias = obtenerCategorias($conexion);
                         <select class="form-select" id="id_categoria" name="id_categoria" required>
                             <option value="">Seleccione una categoría</option>
                             <?php
-                            // Llenamos el dropdown y marcamos la categoría actual
                             if ($categorias->num_rows > 0) {
                                 while($fila_cat = $categorias->fetch_assoc()) {
-                                    // Comparamos el ID de la categoría con el ID de la categoría del producto
+                                    // Marcar la categoría actual como seleccionada
                                     $selected = ($fila_cat['id_categoria'] == $producto['id_categoria']) ? 'selected' : '';
                                     echo "<option value='" . $fila_cat['id_categoria'] . "' $selected>" . $fila_cat['nombre'] . "</option>";
                                 }
