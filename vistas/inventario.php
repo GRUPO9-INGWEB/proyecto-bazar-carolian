@@ -1,5 +1,6 @@
 <?php
 // Incluimos la conexión y los modelos
+
 include_once "../conexion.php";
 include_once "../modelos/categoria_modelo.php"; 
 include_once "../modelos/producto_modelo.php";
