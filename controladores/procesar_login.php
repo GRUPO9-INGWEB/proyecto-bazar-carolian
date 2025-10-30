@@ -13,9 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Buscar usuario activo por DNI
     $sql = "SELECT u.id_usuario, u.nombre_completo, u.email, u.dni, u.telefono, 
-                   u.rol_id, u.estado, u.password, r.nombre_rol
+                   u.id_rol, u.estado, u.password, r.nombre_rol
             FROM usuarios u
-            INNER JOIN roles r ON u.rol_id = r.id_rol
+            INNER JOIN roles r ON u.id_rol = r.id_rol
             WHERE u.dni = ? AND u.estado = 1
             LIMIT 1";
 
@@ -27,26 +27,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($resultado && $resultado->num_rows > 0) {
         $usuario = $resultado->fetch_assoc();
 
-        // Verificar contraseña (hash o texto plano)
-        if (password_verify($password, $usuario['password']) || $password === $usuario['password']) {
+        // --- CORRECCIÓN DE SEGURIDAD ---
+        // Verificar contraseña ÚNICAMENTE con password_verify.
+        // Se eliminó la comprobación de texto plano ($password === $usuario['password'])
+        if (password_verify($password, $usuario['password'])) {
             
             // Guardar datos en sesión
             $_SESSION['logged_in'] = true;
             $_SESSION['usuario_id'] = $usuario['id_usuario'];
             $_SESSION['usuario_nombre'] = $usuario['nombre_completo'];
-            $_SESSION['usuario_rol'] = $usuario['rol_id'];
+            $_SESSION['usuario_rol'] = $usuario['id_rol']; // Este es el nombre que usamos
             $_SESSION['usuario_rol_nombre'] = $usuario['nombre_rol'];
             $_SESSION['dni'] = $usuario['dni'];
 
+            // --- LÓGICA DE ROL CORREGIDA ---
             // Redirigir según el rol
-            if ($usuario['rol_id'] == 1) {
+            if ($usuario['id_rol'] == 1) {
                 header("Location: ../vistas/dashboard_admin.php");
-            } elseif ($usuario['rol_id'] == 2) {
+                exit;
+            } elseif ($usuario['id_rol'] == 2) {
                 header("Location: ../vistas/dashboard_vendedor.php");
+                exit;
             } else {
-                header("Location: ../vistas/dashboard.php");
+                // Si el rol no es 1 o 2, no debe entrar.
+                session_destroy(); // Destruimos la sesión creada
+                echo "<script>alert('Su usuario no tiene permisos para acceder al sistema'); window.location='../vistas/login.php';</script>";
+                exit;
             }
-            exit;
 
         } else {
             echo "<script>alert('Contraseña incorrecta'); window.location='../vistas/login.php';</script>";

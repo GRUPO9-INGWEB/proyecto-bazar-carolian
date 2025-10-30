@@ -92,7 +92,7 @@ include_once "../includes/seguridad.php";
         <a href="home_vendedor.php" target="contenido"><span>🏠</span> Inicio</a>
         <a href="ventas.php" target="contenido"><span>🛒</span> Ventas</a>
         <a href="categorias.php" target="contenido"><span>📂</span> Categorías</a>
-        <a href="inventario.php" target="contenido"><span>📦</span> Productos</a>
+        <a href="producto.php" target="contenido"><span>📦</span> Productos</a>
         <a href="reportes.php" target="contenido"><span>📈</span> Reportes</a>
         <a class="logout" href="../controladores/logout.php"><span>🚪</span> Cerrar Sesión</a>
     </div>

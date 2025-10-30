@@ -1,39 +1,17 @@
 <?php
 
 // Función para registrar una nueva categoría
-function registrarCategoria($conexion, $nombre, $descripcion) {
-    // Preparamos la consulta SQL para evitar inyecciones SQL
-    $stmt = $conexion->prepare("INSERT INTO categorias (nombre, descripcion) VALUES (?, ?)");
+function registrarCategoria($conexion, $datos) {
+    // Preparamos la consulta SQL
+    $stmt = $conexion->prepare("INSERT INTO categorias (nombre, descripcion, estado) VALUES (?, ?, ?)");
     
-    // "ss" significa que estamos pasando dos strings (cadenas de texto)
-    $stmt->bind_param("ss", $nombre, $descripcion);
+    // "ssi" = string, string, integer (para el estado)
+    $stmt->bind_param("ssi", 
+        $datos['nombre'], 
+        $datos['descripcion'],
+        $datos['estado']
+    );
     
-    // Ejecutamos la consulta
-    if ($stmt->execute()) {
-        return true; // Éxito
-    } else {
-        return false; // Error
-    }
-}
-
-// Función para obtener todas las categorías
-function obtenerCategorias($conexion) {
-    $sql = "SELECT id_categoria, nombre, descripcion FROM categorias ORDER BY nombre ASC";
-    $resultado = $conexion->query($sql);
-    return $resultado; // Devolvemos el objeto de resultado
-}
-
-// --- NUEVA FUNCIÓN AÑADIDA ---
-
-// Función para eliminar una categoría por su ID
-function eliminarCategoria($conexion, $id) {
-    // Preparamos la consulta
-    $stmt = $conexion->prepare("DELETE FROM categorias WHERE id_categoria = ?");
-    
-    // "i" significa que estamos pasando un integer (número)
-    $stmt->bind_param("i", $id);
-    
-    // Ejecutamos
     if ($stmt->execute()) {
         return true;
     } else {
@@ -41,31 +19,50 @@ function eliminarCategoria($conexion, $id) {
     }
 }
 
+// Función para obtener todas las categorías
+function obtenerCategorias($conexion) {
+    // Añadimos 'estado' al SELECT
+    $sql = "SELECT id_categoria, nombre, descripcion, estado FROM categorias ORDER BY nombre ASC";
+    $resultado = $conexion->query($sql);
+    return $resultado;
+}
+
+// Función para eliminar una categoría por su ID
+function eliminarCategoria($conexion, $id) {
+    $stmt = $conexion->prepare("DELETE FROM categorias WHERE id_categoria = ?");
+    $stmt->bind_param("i", $id);
+    
+    if ($stmt->execute()) {
+        return true;
+    } else {
+        // Podría fallar si hay productos usando esta categoría (Error de Llave Foránea)
+        return false;
+    }
+}
+
 // Función para OBTENER una categoría específica por su ID
 function obtenerCategoriaPorID($conexion, $id) {
-    // Preparamos la consulta
-    $stmt = $conexion->prepare("SELECT id_categoria, nombre, descripcion FROM categorias WHERE id_categoria = ?");
-    
-    // "i" = integer
+    // Añadimos 'estado' al SELECT
+    $stmt = $conexion->prepare("SELECT id_categoria, nombre, descripcion, estado FROM categorias WHERE id_categoria = ?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    
-    // Obtenemos el resultado
     $resultado = $stmt->get_result();
-    
-    // Devolvemos la fila (o null si no se encontró)
     return $resultado->fetch_assoc();
 }
 
 // Función para ACTUALIZAR una categoría
-function actualizarCategoria($conexion, $id, $nombre, $descripcion) {
-    // Preparamos la consulta
-    $stmt = $conexion->prepare("UPDATE categorias SET nombre = ?, descripcion = ? WHERE id_categoria = ?");
+function actualizarCategoria($conexion, $datos) {
+    // Añadimos 'estado = ?' al UPDATE
+    $stmt = $conexion->prepare("UPDATE categorias SET nombre = ?, descripcion = ?, estado = ? WHERE id_categoria = ?");
     
-    // "ssi" = string, string, integer
-    $stmt->bind_param("ssi", $nombre, $descripcion, $id);
+    // "ssii" = string, string, integer, integer
+    $stmt->bind_param("ssii", 
+        $datos['nombre'], 
+        $datos['descripcion'], 
+        $datos['estado'],
+        $datos['id_categoria']
+    );
     
-    // Ejecutamos
     if ($stmt->execute()) {
         return true;
     } else {

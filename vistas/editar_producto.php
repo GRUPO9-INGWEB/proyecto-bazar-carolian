@@ -4,15 +4,15 @@ include_once "../modelos/producto_modelo.php";
 include_once "../modelos/categoria_modelo.php";
 
 if (!isset($_GET['id'])) {
-    header("Location: ../vistas/inventario.php");
+    header("Location: ../vistas/producto.php");
     exit();
 }
 $id_producto = $_GET['id'];
-$producto = obtenerProductoPorID($conexion, $id_producto);
-$categorias = obtenerCategorias($conexion); // Para el dropdown
+$producto = obtenerProductoPorID($conexion, $id_producto); // Ya trae 'estado' y 'fecha_caducidad'
+$categorias = obtenerCategorias($conexion);
 
 if (!$producto) {
-    header("Location: ../vistas/inventario.php?status=notfound");
+    header("Location: ../vistas/producto.php?status=notfound");
     exit();
 }
 ?>
@@ -34,11 +34,6 @@ if (!$producto) {
                     <input type="hidden" name="id_producto" value="<?php echo $producto['id_producto']; ?>">
 
                     <div class="mb-3">
-                        <label for="codigo_producto" class="form-label">Código (SKU / Barras):</label>
-                        <input type="text" class="form-control" id="codigo_producto" name="codigo_producto" value="<?php echo $producto['codigo']; ?>">
-                    </div>
-
-                    <div class="mb-3">
                         <label for="nombre_producto" class="form-label">Nombre del Producto:</label>
                         <input type="text" class="form-control" id="nombre_producto" name="nombre_producto" value="<?php echo $producto['nombre']; ?>" required>
                     </div>
@@ -50,7 +45,6 @@ if (!$producto) {
                             <?php
                             if ($categorias->num_rows > 0) {
                                 while($fila_cat = $categorias->fetch_assoc()) {
-                                    // Marcar la categoría actual como seleccionada
                                     $selected = ($fila_cat['id_categoria'] == $producto['id_categoria']) ? 'selected' : '';
                                     echo "<option value='" . $fila_cat['id_categoria'] . "' $selected>" . $fila_cat['nombre'] . "</option>";
                                 }
@@ -58,25 +52,39 @@ if (!$producto) {
                             ?>
                         </select>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="codigo_producto" class="form-label">Código (SKU):</label>
+                            <input type="text" class="form-control" id="codigo_producto" name="codigo_producto" value="<?php echo $producto['codigo']; ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="precio_producto" class="form-label">P. Venta (S/.):</label>
+                            <input type="number" step="0.01" class="form-control" id="precio_producto" name="precio_producto" value="<?php echo $producto['precio_venta']; ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_caducidad" class="form-label">Fecha Caduc.:</label>
+                            <input type="date" class="form-control" id="fecha_caducidad" name="fecha_caducidad" value="<?php echo $producto['fecha_caducidad']; ?>">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="estado" class="form-label">Estado:</label>
+                            <select class="form-select" id="estado" name="estado" required>
+                                <option value="1" <?php echo ($producto['estado'] == 1) ? 'selected' : ''; ?>>Activo</option>
+                                <option value="0" <?php echo ($producto['estado'] == 0) ? 'selected' : ''; ?>>Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
                     
                     <div class="mb-3">
                         <label for="desc_producto" class="form-label">Descripción (Opcional):</label>
                         <textarea class="form-control" id="desc_producto" name="desc_producto" rows="2"><?php echo $producto['descripcion']; ?></textarea>
                     </div>
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label for="precio_producto" class="form-label">Precio (S/.):</label>
-                            <input type="number" step="0.01" class="form-control" id="precio_producto" name="precio_producto" value="<?php echo $producto['precio_venta']; ?>" required>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label for="stock_producto" class="form-label">Stock (Uds.):</label>
-                            <input type="number" class="form-control" id="stock_producto" name="stock_producto" value="<?php echo $producto['stock']; ?>" required>
-                        </div>
-                    </div>
-
                     <button type="submit" class="btn btn-success">Actualizar Producto</button>
-                    <a href="../vistas/inventario.php" class="btn btn-secondary">Cancelar</a>
+                    <a href="../vistas/producto.php" class="btn btn-secondary">Cancelar</a>
                 </form>
             </div>
         </div>

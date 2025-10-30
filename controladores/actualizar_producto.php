@@ -7,21 +7,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $datos_producto = [
         'id_producto' => $_POST['id_producto'],
         'id_categoria' => $_POST['id_categoria'],
-        'codigo' => $_POST['codigo_producto'], // <-- ¡CAMPO NUEVO!
+        'codigo' => $_POST['codigo_producto'],
         'nombre' => $_POST['nombre_producto'],
         'descripcion' => $_POST['desc_producto'],
         'precio' => $_POST['precio_producto'],
-        'stock' => $_POST['stock_producto']
+        'fecha_caducidad' => $_POST['fecha_caducidad'],
+        'estado' => $_POST['estado']
     ];
     
     $resultado = actualizarProducto($conexion, $datos_producto);
 
     if ($resultado === true) {
-        header("Location: ../vistas/inventario.php?status=updated");
+        header("Location: ../vistas/producto.php?status=updated");
     } else if ($resultado === "code_exists") {
-        header("Location: ../vistas/inventario.php?status=code_exists");
+        header("Location: ../vistas/producto.php?status=code_exists");
     } else {
-        header("Location: ../vistas/inventario.php?status=update_error");
+        header("Location: ../vistas/producto.php?status=update_error");
     }
     exit();
 }

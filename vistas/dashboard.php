@@ -8,14 +8,23 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
     exit;
 }
 
-// Redirige según rol
-if ($_SESSION['rol_id'] == 1) {
+// --- CORRECCIÓN PRINCIPAL ---
+// Se usa 'usuario_rol' en lugar de 'id_rol' para coincidir con el login
+// Se añade isset() para evitar warnings si la variable no existiera.
+
+if (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] == 1) {
     header("Location: dashboard_admin.php");
     exit;
-} elseif ($_SESSION['rol_id'] == 2) {
+} elseif (isset($_SESSION['usuario_rol']) && $_SESSION['usuario_rol'] == 2) {
     header("Location: dashboard_vendedor.php");
     exit;
 } else {
-    echo "Rol no reconocido.";
+    // Si llega aquí, es porque el rol no es 1 ni 2, o es nulo.
+    // Destruimos la sesión para evitar bucles y lo mandamos a login.
+    session_destroy();
+    echo "Rol no reconocido. Serás redirigido al login.";
+    // Redirige al login después de 3 segundos
+    header("refresh:3;url=login.php");
+    exit;
 }
 ?>

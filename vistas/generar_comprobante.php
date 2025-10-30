@@ -1,14 +1,17 @@
 <?php
+// Incluir seguridad al inicio (necesario para $_SESSION['usuario_id'] si lo usas)
+include_once "../includes/seguridad.php"; 
+
 // 1. Incluimos las librerías
-require('../fpdf/fpdf.php'); // Incluir la librería FPDF
+// ¡RUTA CORREGIDA! Asume que la carpeta 'fpdf' está paralela a 'vistas'.
+require('../fpdf/fpdf.php'); 
 include_once "../conexion.php";
 include_once "../modelos/venta_modelo.php";
-include_once "../servicios/enviar_email.php"; // ¡INCLUIMOS EL SERVICIO DE EMAIL!
+// include_once "../servicios/enviar_email.php"; // Descomenta si tienes este archivo
 
 // 2. Verificamos que se haya enviado un ID
 if (!isset($_GET['id'])) {
-    echo "Error: No se proporcionó ID de venta.";
-    exit;
+    die("Error: No se proporcionó ID de venta.");
 }
 $id_venta = $_GET['id'];
 
@@ -17,20 +20,19 @@ $venta = obtenerVentaCompleta($conexion, $id_venta);
 $detalles = obtenerDetalleVenta($conexion, $id_venta);
 
 if (!$venta) {
-    echo "Error: Venta no encontrada.";
-    exit;
+    die("Error: Venta no encontrada.");
 }
 
-// 4. CREACIÓN DEL PDF
+// 4. CREACIÓN DEL PDF 
 class PDF extends FPDF
 {
     // Cabecera de página
     function Header()
     {
         $this->SetFont('Arial','B',15);
-        $this->Cell(80); // Mover a la derecha
-        $this->Cell(30,10,'Bazar Carolian',0,0,'C');
-        $this->Ln(5); // Salto de línea
+        $this->Cell(80); 
+        $this->Cell(30,10,utf8_decode('Bazar Carolian'),0,0,'C');
+        $this->Ln(5); 
         
         $this->SetFont('Arial','',10);
         $this->Cell(80);
@@ -38,13 +40,13 @@ class PDF extends FPDF
         $this->Ln(5);
         $this->Cell(80);
         $this->Cell(30,10,utf8_decode('Av. Ejemplo 123, Lima'),0,0,'C');
-        $this->Ln(20); // Salto de línea grande
+        $this->Ln(20); 
     }
 
     // Pie de página
     function Footer()
     {
-        $this->SetY(-15); // Posición a 1.5 cm del final
+        $this->SetY(-15); 
         $this->SetFont('Arial','I',8);
         $this->Cell(0,10,utf8_decode('Gracias por su compra'),0,0,'C');
         $this->Cell(0,10,utf8_decode('Página ').$this->PageNo(),0,0,'R');
@@ -72,15 +74,15 @@ $pdf->SetFont('Arial','',10);
 if ($venta['id_cliente']) {
     $pdf->Cell(130, 7, utf8_decode('Nombre/Razón Social: ' . $venta['nombre_cliente']), 0, 0);
     $pdf->Cell(60, 7, utf8_decode($venta['documento_tipo'] . ': ' . $venta['documento_numero']), 0, 1);
-    $pdf->Cell(130, 7, utf8_decode('Dirección: ' . $venta['direccion_cliente']), 0, 1);
+    $pdf->Cell(130, 7, utf8_decode('Dirección: ' . ($venta['direccion_cliente'] ?? 'N/A')), 0, 1);
 } else {
     $pdf->Cell(130, 7, utf8_decode('Cliente: Varios (Venta simple)'), 0, 1);
 }
-$pdf->Ln(10); // Salto de línea
+$pdf->Ln(10); 
 
 // 6. TABLA DE DETALLES DE PRODUCTOS
 $pdf->SetFont('Arial','B',10);
-$pdf->SetFillColor(230, 230, 230); // Color de fondo gris claro
+$pdf->SetFillColor(230, 230, 230); 
 $pdf->Cell(20, 7, 'Cant.', 1, 0, 'C', true);
 $pdf->Cell(90, 7, 'Producto', 1, 0, 'C', true);
 $pdf->Cell(40, 7, 'P. Unitario', 1, 0, 'C', true);
@@ -94,11 +96,18 @@ while ($item = $detalles->fetch_assoc()) {
     $pdf->Cell(40, 7, 'S/ ' . number_format($item['precio_unitario'], 2), 1, 0, 'R');
     $pdf->Cell(40, 7, 'S/ ' . number_format($importe_item, 2), 1, 1, 'R');
 }
-$pdf->Ln(10); // Salto de línea
+$pdf->Ln(5); 
 
-// 7. TOTALES
+// 7. Campo Observaciones (Nuevo en el PDF)
+if (!empty($venta['observaciones'])) {
+    $pdf->SetFont('Arial','I',10);
+    $pdf->Cell(0, 7, utf8_decode('Obs.: ' . $venta['observaciones']), 0, 1, 'L');
+    $pdf->Ln(5);
+}
+
+// 8. TOTALES
 $pdf->SetFont('Arial','B',12);
-$pdf->Cell(130, 8, '', 0, 0); // Espacio vacío
+$pdf->Cell(130, 8, '', 0, 0); 
 $pdf->Cell(30, 8, 'Subtotal:', 0, 0, 'R');
 $pdf->Cell(30, 8, 'S/ ' . number_format($venta['subtotal'], 2), 0, 1, 'R');
 
@@ -112,7 +121,7 @@ $pdf->Cell(30, 8, 'TOTAL:', 0, 0, 'R');
 $pdf->Cell(30, 8, 'S/ ' . number_format($venta['total'], 2), 0, 1, 'R');
 $pdf->Ln(5);
 
-// 8. Método de pago
+// 9. Método de pago
 $pdf->SetFont('Arial','',10);
 $pdf->Cell(0, 7, utf8_decode('Método de Pago: ' . $venta['metodo_pago']), 0, 1, 'L');
 if ($venta['metodo_pago'] == 'Efectivo') {
@@ -121,34 +130,23 @@ if ($venta['metodo_pago'] == 'Efectivo') {
 }
 
 
-/* * ======================================================
- * ¡NUEVA SECCIÓN DE ENVÍO DE CORREO!
- * ======================================================
- */
+/* 10. Lógica de guardado y envío por correo (Opcional) */
 try {
-    // 1. Definimos la ruta donde se guardará el PDF
     $nombre_archivo = 'Comprobante_Venta_' . $id_venta . '.pdf';
-    // Usamos __DIR__ para obtener la ruta absoluta del directorio actual (vistas)
-    // y luego retrocedemos un nivel para entrar a 'comprobantes'
-    $ruta_pdf = __DIR__ . '/../comprobantes/' . $nombre_archivo;
+    // Se asume que 'comprobantes' está paralelo a 'vistas'
+    $ruta_pdf = __DIR__ . '/../comprobantes/' . $nombre_archivo; 
 
-    // 2. Guardamos el PDF en el servidor
-    $pdf->Output('F', $ruta_pdf); // 'F' = Guardar en archivo
+    $pdf->Output('F', $ruta_pdf); 
     
-    // 3. Intentamos enviar el correo (la función está en servicios/enviar_email.php)
-    enviarComprobantePorEmail($venta, $ruta_pdf);
+    // if (!empty($venta['email_cliente']) && function_exists('enviarComprobantePorEmail')) {
+    //     enviarComprobantePorEmail($venta, $ruta_pdf); 
+    // }
     
-    // 4. Opcional: Borramos el archivo PDF del servidor después de enviarlo
-    // unlink($ruta_pdf); 
-    // (Lo dejamos comentado para poder revisar si se crea bien)
-
 } catch (Exception $e) {
-    // Si algo falla con el email, no rompemos la página
-    // Opcional: registrar el error $e->getMessage()
+    // Manejo de errores de guardado o email
 }
 
 
-// 9. Salida del PDF al navegador
-// Esto se ejecuta después de intentar enviar el email
-$pdf->Output('I', $nombre_archivo); // 'I' envía al navegador
+// 11. Salida del PDF al navegador
+$pdf->Output('I', $nombre_archivo); 
 ?>

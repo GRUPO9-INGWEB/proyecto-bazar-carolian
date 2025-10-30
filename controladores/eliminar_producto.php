@@ -15,11 +15,11 @@ if (isset($_GET['id'])) {
 }
 
 // 4. Redirigimos al usuario de vuelta a la lista
+// --- CAMBIO DE RUTA ---
 if ($exito) {
-    header("Location: ../vistas/inventario.php?status=deleted");
+    header("Location: ../vistas/producto.php?status=deleted");
 } else {
-    header("Location: ../vistas/inventario.php?status=delete_error");
+    header("Location: ../vistas/producto.php?status=delete_error");
 }
 exit();
-
 ?>
