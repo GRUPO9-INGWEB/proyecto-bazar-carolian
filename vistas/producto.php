@@ -1,4 +1,5 @@
 <?php
+// Ubicación: vistas/producto.php
 include_once "../conexion.php";
 include_once "../modelos/categoria_modelo.php"; 
 include_once "../modelos/producto_modelo.php";
@@ -25,7 +26,7 @@ $productos = obtenerProductos($conexion);
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Gestión de Inventario (Productos)</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarProducto">
+            <button id="btn_nuevo_producto" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarProducto">
                 <i class="fas fa-plus"></i> Registrar Nuevo Producto
             </button>
         </div>
@@ -34,7 +35,7 @@ $productos = obtenerProductos($conexion);
             <div class="col-md-12">
                 <h3>Inventario Actual</h3>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover table-sm">
+                    <table class="table table-striped table-hover table-sm" id="dataTableProductos">
                         
                         <thead class="table-dark">
                             <tr>
@@ -53,6 +54,17 @@ $productos = obtenerProductos($conexion);
                             <?php
                             if ($productos->num_rows > 0) {
                                 while($fila_prod = $productos->fetch_assoc()) {
+                                    $fecha_formateada = 'N/A';
+                                    if (!empty($fila_prod['fecha_caducidad'])) {
+                                        $fecha_formateada = date('d/m/Y', strtotime($fila_prod['fecha_caducidad']));
+                                    }
+                                    
+                                    if ($fila_prod['estado'] == 1) {
+                                        $estado_html = "<span class='badge bg-success'>Activo</span>";
+                                    } else {
+                                        $estado_html = "<span class='badge bg-danger'>Inactivo</span>";
+                                    }
+
                                     echo "<tr>";
                                     echo "<td>" . $fila_prod['id_producto'] . "</td>";
                                     echo "<td>" . $fila_prod['codigo'] . "</td>";
@@ -60,27 +72,17 @@ $productos = obtenerProductos($conexion);
                                     echo "<td>" . $fila_prod['nombre_categoria'] . "</td>"; 
                                     echo "<td>S/ " . number_format($fila_prod['precio_costo'], 2) . "</td>";
                                     echo "<td>S/ " . number_format($fila_prod['precio_venta'], 2) . "</td>";
-
-                                    // --- ¡FORMATO DE FECHA CORREGIDO (DD/MM/YYYY)! ---
-                                    $fecha_formateada = 'N/A';
-                                    if (!empty($fila_prod['fecha_caducidad'])) {
-                                        // Convierte la fecha de la BD (YYYY-MM-DD) al formato (DD/MM/YYYY)
-                                        $fecha_formateada = date('d/m/Y', strtotime($fila_prod['fecha_caducidad']));
-                                    }
                                     echo "<td>" . $fecha_formateada . "</td>";
-                                    
                                     echo "<td>" . $fila_prod['stock'] . "</td>";
-                                    
-                                    if ($fila_prod['estado'] == 1) {
-                                        echo "<td><span class='badge bg-success'>Activo</span></td>";
-                                    } else {
-                                        echo "<td><span class='badge bg-danger'>Inactivo</span></td>";
-                                    }
+                                    echo "<td>" . $estado_html . "</td>";
                                     
                                     echo "<td>
-                                            <a href='../vistas/editar_producto.php?id=" . $fila_prod['id_producto'] . "' class='btn btn-warning btn-sm'>Editar</a>
-                                            <button onclick='confirmarEliminarProducto(" . $fila_prod['id_producto'] . ")' class='btn btn-danger btn-sm'>Eliminar</button>
-                                          </td>";
+                                        <button type='button' class='btn btn-warning btn-sm btn-editar me-1' 
+                                            data-id='" . $fila_prod['id_producto'] . "' data-bs-toggle='modal' data-bs-target='#modalRegistrarProducto'>
+                                            Editar
+                                        </button>
+                                        <button onclick='confirmarEliminarProducto(" . $fila_prod['id_producto'] . ")' class='btn btn-danger btn-sm'>Eliminar</button>
+                                    </td>";
                                     echo "</tr>";
                                 }
                             } else {
@@ -92,16 +94,21 @@ $productos = obtenerProductos($conexion);
                 </div>
             </div>
         </div>
-    </div> <div class="modal fade" id="modalRegistrarProducto" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    </div> 
+    
+    <div class="modal fade" id="modalRegistrarProducto" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Registrar Nuevo Producto</h5>
+                    <h5 class="modal-title" id="modalLabelProducto">Registrar Nuevo Producto</h5> 
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <form action="../controladores/registrar_producto.php" method="POST">
+                <form id="formProducto" action="../controladores/producto_controlador.php" method="POST">
                     <div class="modal-body">
+                        
+                        <input type="hidden" id="id_producto" name="id_producto">
+                        <input type="hidden" id="accion_producto" name="accion" value="registrar"> 
                         
                         <div class="mb-3">
                             <label for="nombre_producto" class="form-label">Nombre del Producto:</label>
@@ -112,11 +119,9 @@ $productos = obtenerProductos($conexion);
                             <select class="form-select" id="id_categoria" name="id_categoria" required>
                                 <option value="">Seleccione una categoría</option>
                                 <?php
-                                if ($categorias->num_rows > 0) {
-                                    $categorias->data_seek(0);
-                                    while($fila_cat = $categorias->fetch_assoc()) {
-                                        echo "<option value='" . $fila_cat['id_categoria'] . "'>" . $fila_cat['nombre'] . "</option>";
-                                    }
+                                $categorias->data_seek(0);
+                                while($fila_cat = $categorias->fetch_assoc()) {
+                                    echo "<option value='" . $fila_cat['id_categoria'] . "'>" . $fila_cat['nombre'] . "</option>";
                                 }
                                 ?>
                             </select>
@@ -129,6 +134,17 @@ $productos = obtenerProductos($conexion);
                             <div class="col-md-6 mb-3">
                                 <label for="precio_producto" class="form-label">P. Venta (S/.):</label>
                                 <input type="number" step="0.01" class="form-control" id="precio_producto" name="precio_producto" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                             <div class="col-md-6 mb-3">
+                                <label for="precio_costo" class="form-label">P. Costo (S/.):</label>
+                                <input type="number" step="0.01" class="form-control" id="precio_costo" name="precio_costo" value="0" required>
+                            </div>
+                            <div class="col-md-6 mb-3" id="stock_group">
+                                <label for="stock" class="form-label">Stock Inicial:</label>
+                                <input type="number" class="form-control" id="stock" name="stock" value="0" required>
                             </div>
                         </div>
                         <div class="row">
@@ -157,14 +173,48 @@ $productos = obtenerProductos($conexion);
 
             </div>
         </div>
-    </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </div> 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    
     <script>
-        // Tus funciones de 'mostrarAlertas' y 'confirmarEliminarProducto'
-        // (Sin cambios)
-        function mostrarAlertas() { /* ... */ }
-        function confirmarEliminarProducto(id) { /* ... */ }
-        document.addEventListener('DOMContentLoaded', mostrarAlertas);
+        // Función de eliminación: ahora usa AJAX para eliminar sin recargar.
+        function confirmarEliminarProducto(id) { 
+             Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡El producto será eliminado!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, ¡bórralo!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../controladores/producto_controlador.php', // Apunta al controlador AJAX
+                        data: { accion: 'eliminar', id_producto: id },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.exito) {
+                                Swal.fire('¡Eliminado!', response.mensaje, 'success');
+                                window.location.reload(); 
+                            } else {
+                                Swal.fire('Error', response.mensaje, 'error');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aquí puedes dejar tus funciones de inicialización si las tenías
+        });
     </script>
+    
+    <script src="../assets/js/productos_ajax.js"></script>
 </body>
 </html>

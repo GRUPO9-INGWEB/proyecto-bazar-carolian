@@ -1,9 +1,9 @@
 <?php
-// Incluimos la conexión y el modelo
-include_once "../conexion.php";
-include_once "../modelos/categoria_modelo.php";
+// Ubicación: vistas/categoria.php
 
-// Obtenemos todas las categorías para listarlas en la tabla
+include_once "../conexion.php";
+include_once "../modelos/categoria_modelo.php"; 
+
 $categorias = obtenerCategorias($conexion);
 ?>
 
@@ -12,8 +12,7 @@ $categorias = obtenerCategorias($conexion);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Categorías</title>
-    
+    <title>Gestión de Categorías - Bazar Carolian</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
@@ -26,7 +25,7 @@ $categorias = obtenerCategorias($conexion);
         
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Gestión de Categorías</h1>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistrarCategoria">
+            <button id="btn_nueva_categoria" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCategoria">
                 <i class="fas fa-plus"></i> Registrar Nueva Categoría
             </button>
         </div>
@@ -35,39 +34,40 @@ $categorias = obtenerCategorias($conexion);
             <div class="col-md-12">
                 <h3>Categorías Existentes</h3>
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover table-sm">
+                    <table class="table table-striped table-hover table-sm" id="dataTableCategorias">
+                        
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
-                                <th>Estado</th> <th>Acciones</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php
                             if ($categorias->num_rows > 0) {
                                 while($fila = $categorias->fetch_assoc()) {
+                                    $estado_html = ($fila['estado'] == 1) ? "<span class='badge bg-success'>Activo</span>" : "<span class='badge bg-danger'>Inactivo</span>";
+
                                     echo "<tr>";
                                     echo "<td>" . $fila['id_categoria'] . "</td>";
                                     echo "<td>" . $fila['nombre'] . "</td>";
                                     echo "<td>" . $fila['descripcion'] . "</td>";
-                                    
-                                    // Mostramos el estado con una insignia
-                                    if ($fila['estado'] == 1) {
-                                        echo "<td><span class='badge bg-success'>Activo</span></td>";
-                                    } else {
-                                        echo "<td><span class='badge bg-danger'>Inactivo</span></td>";
-                                    }
+                                    echo "<td>" . $estado_html . "</td>";
                                     
                                     echo "<td>
-                                            <a href='../vistas/editar_categoria.php?id=" . $fila['id_categoria'] . "' class='btn btn-warning btn-sm'>Editar</a>
-                                            <button onclick='confirmarEliminar(" . $fila['id_categoria'] . ")' class='btn btn-danger btn-sm'>Eliminar</button>
-                                          </td>";
+                                        <button type='button' class='btn btn-warning btn-sm btn-editar me-1' 
+                                            data-id='" . $fila['id_categoria'] . "' data-bs-toggle='modal' data-bs-target='#modalCategoria'>
+                                            Editar
+                                        </button>
+                                        <button onclick='confirmarEliminarCategoria(" . $fila['id_categoria'] . ")' class='btn btn-danger btn-sm'>Eliminar</button>
+                                    </td>";
                                     echo "</tr>";
                                 }
                             } else {
-                                echo "<tr><td colspan='5' class='text-center'>No hay categorías registradas.</td></tr>"; // Colspan 5
+                                echo "<tr><td colspan='5' class='text-center'>No hay categorías registradas.</td></tr>";
                             }
                             ?>
                         </tbody>
@@ -75,31 +75,35 @@ $categorias = obtenerCategorias($conexion);
                 </div>
             </div>
         </div>
-    </div> <div class="modal fade" id="modalRegistrarCategoria" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    </div> 
+    
+    <div class="modal fade" id="modalCategoria" tabindex="-1" aria-labelledby="modalLabelCategoria" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalLabel">Registrar Nueva Categoría</h5>
+                    <h5 class="modal-title" id="modalLabelCategoria">Registrar Nueva Categoría</h5> 
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <form action="../controladores/registrar_categoria.php" method="POST">
+                <form id="formCategoria"> 
                     <div class="modal-body">
                         
-                        <div class="mb-3">
-                            <label for="nombre_categoria" class="form-label">Nombre:</label>
-                            <input type="text" class="form-control" id="nombre_categoria" name="nombre_categoria" required>
-                        </div>
+                        <input type="hidden" id="id_categoria" name="id_categoria">
+                        <input type="hidden" id="accion_categoria" name="accion" value="registrar"> 
                         
                         <div class="mb-3">
-                            <label for="desc_categoria" class="form-label">Descripción (Opcional):</label>
-                            <textarea class="form-control" id="desc_categoria" name="desc_categoria" rows="3"></textarea>
+                            <label for="nombre" class="form-label">Nombre de la Categoría:</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
                         </div>
-
                         <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción (Opcional):</label>
+                            <textarea class="form-control" id="descripcion" name="descripcion" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="mb-3" id="estado_group" style="display:none;">
                             <label for="estado" class="form-label">Estado:</label>
                             <select class="form-select" id="estado" name="estado" required>
-                                <option value="1" selected>Activo</option>
+                                <option value="1">Activo</option>
                                 <option value="0">Inactivo</option>
                             </select>
                         </div>
@@ -113,55 +117,51 @@ $categorias = obtenerCategorias($conexion);
 
             </div>
         </div>
-    </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </div> 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    
     <script>
-        // Tus funciones JS de 'mostrarAlertas' y 'confirmarEliminar'
-        // son perfectas, las reutilizamos.
-        
-        function mostrarAlertas() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const status = urlParams.get('status');
-            let title, text, icon;
-
-            if (status === 'success') {
-                title = '¡Éxito!'; text = 'Categoría registrada correctamente.'; icon = 'success';
-            } else if (status === 'updated') {
-                title = '¡Actualizado!'; text = 'Categoría actualizada correctamente.'; icon = 'success';
-            } else if (status === 'deleted') {
-                title = '¡Eliminado!'; text = 'La categoría se ha eliminado.'; icon = 'success';
-            } else if (status === 'error' || status === 'update_error') {
-                title = '¡Error!'; text = 'Ocurrió un error al procesar la solicitud.'; icon = 'error';
-            } else if (status === 'delete_error') {
-                title = '¡Error!'; text = 'No se pudo eliminar. Asegúrese de que no haya productos usando esta categoría.'; icon = 'error';
-            } else if (status === 'notfound') {
-                title = '¡Error!'; text = 'No se encontró la categoría solicitada.'; icon = 'error';
-            }
-
-            if (status) {
-                Swal.fire({ title: title, text: text, icon: icon, timer: 2500, showConfirmButton: false });
-                window.history.replaceState(null, null, window.location.pathname);
-            }
-        }
-        
-        function confirmarEliminar(id) {
-            Swal.fire({
+        // Función de eliminación: ADAPTADA para usar AJAX
+        function confirmarEliminarCategoria(id) { 
+             Swal.fire({
                 title: '¿Estás seguro?',
-                text: "¡No podrás revertir esto! (Asegúrese de que ningún producto esté usando esta categoría)",
+                text: "¡La categoría será eliminada!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Sí, ¡bórralo!',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, ¡bórrala!',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = '../controladores/eliminar_categoria.php?id=' + id;
+                    // En lugar de redireccionar a eliminar_categoria.php, usamos AJAX
+                    $.ajax({
+                        type: 'GET',
+                        url: '../controladores/categoria_controlador.php', // Apunta al controlador AJAX
+                        data: { accion: 'eliminar', id_categoria: id },
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.exito) {
+                                Swal.fire('¡Eliminada!', response.mensaje, 'success');
+                                window.location.reload(); 
+                            } else {
+                                Swal.fire('Error', response.mensaje, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Error de comunicación al eliminar categoría.', 'error');
+                        }
+                    });
                 }
-            })
+            });
         }
         
-        document.addEventListener('DOMContentLoaded', mostrarAlertas);
+        // Eliminamos la función 'mostrarAlertas' porque AJAX maneja las alertas en tiempo real.
     </script>
+    
+    <script src="../assets/js/categorias_ajax.js"></script>
 </body>
 </html>

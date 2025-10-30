@@ -5,7 +5,10 @@ include_once "../includes/seguridad.php";
 require_role(1); 
 
 // --- LÓGICA DE CARGA DE CONTENIDO ---
+// 🌟 NOTA: Tu dashboard usa 'page' para cargar vistas.
 $pagina_solicitada = $_GET['page'] ?? 'home_admin';
+// 🌟 NUEVO: Capturar el parámetro 'status'
+$status = $_GET['status'] ?? ''; 
 
 $vistas_permitidas = [
     'home_admin' => 'home_admin.php',
@@ -108,6 +111,23 @@ $ruta_completa = __DIR__ . '/' . $ruta_contenido;
         </header>
 
         <div id="contenido_dinamico">
+            <?php 
+            if ($status === 'success'): ?>
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> **¡Éxito!** Compra registrada correctamente.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+            <?php elseif ($status === 'error'): ?>
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-times-circle me-2"></i> **¡Error!** Ocurrió un error al registrar la compra.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+            <?php elseif ($status === 'error_datos'): ?>
+                <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> **¡Advertencia!** Faltan datos necesarios (proveedor y/o productos).
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+            <?php endif; ?>
             <?php
             // Incluye la vista (ej: usuarios.php)
             if (file_exists($ruta_completa)) {
@@ -120,9 +140,17 @@ $ruta_completa = __DIR__ . '/' . $ruta_contenido;
     </div>
     
     <script src="../vendor/jquery/jquery.min.js"></script> 
-    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="../vendor/bootstrap/js/bootstrap.bundle.min.js"></script> 
     <script src="../vendor/datatables/jquery.dataTables.min.js"></script>
     <script src="../vendor/datatables/dataTables.bootstrap4.min.js"></script>
     
+    <script>
+        // Si hay 'status' en la URL, lo removemos después de un breve momento
+        if (window.location.search.includes('status=')) {
+            // Elimina los parámetros 'status' de la URL sin recargar la página
+            const newUrl = window.location.pathname + window.location.search.replace(/&?status=[^&]*/, '');
+            window.history.replaceState(null, null, newUrl);
+        }
+    </script>
 </body>
 </html>

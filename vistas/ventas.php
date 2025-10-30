@@ -73,8 +73,8 @@ $id_usuario_actual = $_SESSION['usuario_id'] ?? 0;
                             <label for="tipo_comprobante" class="form-label">Comprobante:</label>
                             <select class="form-select" id="tipo_comprobante" name="tipo_comprobante" form="form_venta">
                                 <option value="Nota de Venta">Nota de Venta (Simple)</option>
-                                <option value="Boleta">Boleta (Simulada)</option>
-                                <option value="Factura">Factura (Simulada)</option>
+                                <option value="Boleta">Boleta</option>
+                                <option value="Factura">Factura</option>
                             </select>
                         </div>
                         

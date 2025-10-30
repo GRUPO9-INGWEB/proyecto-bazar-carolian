@@ -28,7 +28,8 @@ switch ($accion) {
                 'password' => $_POST['password'],
                 'id_rol' => $_POST['id_rol'],
                 'dni' => $_POST['dni'] ?? '',
-                'telefono' => $_POST['telefono'] ?? ''
+                'telefono' => $_POST['telefono'] ?? '',
+                'estado' => $_POST['estado'] ?? 'A' // Asume 'A' si no se envía en registro
             ];
 
             if (registrarUsuario($conexion, $datos)) {
@@ -47,7 +48,8 @@ switch ($accion) {
             isset($_POST['id_usuario']) &&
             isset($_POST['nombre_completo']) &&
             isset($_POST['email']) &&
-            isset($_POST['id_rol'])
+            isset($_POST['id_rol']) &&
+            isset($_POST['estado']) // 👈 VALIDACIÓN AÑADIDA
         ) {
             // Recoger datos
             $datos = [
@@ -57,10 +59,11 @@ switch ($accion) {
                 'password' => $_POST['password'] ?? '', // Puede estar vacío si no se cambia
                 'id_rol' => $_POST['id_rol'],
                 'dni' => $_POST['dni'] ?? '',
-                'telefono' => $_POST['telefono'] ?? ''
+                'telefono' => $_POST['telefono'] ?? '',
+                'estado' => $_POST['estado'] // 👈 DATO CRÍTICO AÑADIDO
             ];
 
-            if (actualizarUsuario($conexion, $datos)) {
+            if (actualizarUsuario($conexion, $datos)) { // Llamada al modelo con todos los datos
                 $respuesta['exito'] = true;
                 $respuesta['mensaje'] = 'Usuario actualizado exitosamente.';
             } else {

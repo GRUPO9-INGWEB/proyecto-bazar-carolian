@@ -1,4 +1,6 @@
 <?php
+// Ubicación: controladores/procesar_compra.php
+
 // Iniciamos sesión para obtener el id_usuario
 session_start(); 
 
@@ -29,12 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // 3. Validar que tengamos todos los datos
     if (empty($datos_compra['id_proveedor']) || empty($carrito)) {
-        header("Location: ../vistas/registrar_compra.php?status=error_datos");
+        // ⭐ ¡CORRECCIÓN! Usar 'page=registrar_compra'
+        header("Location: ../vistas/dashboard_admin.php?page=registrar_compra&status=error_datos");
         exit;
     }
 
     // --- INICIO DE LA TRANSACCIÓN ---
-    // Esto es crucial. Si falla un detalle, se deshace todo.
     $conexion->begin_transaction();
 
     try {
@@ -42,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $id_compra = registrarCompra($conexion, $datos_compra);
         
         if (!$id_compra) {
-            // Si falla el registro de la cabecera, lanzamos una excepción
             throw new Exception("Error al guardar la cabecera de la compra.");
         }
 
@@ -50,35 +51,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         foreach ($carrito as $item) {
             $exito_detalle = registrarDetalleCompra($conexion, $id_compra, $item);
             if (!$exito_detalle) {
-                // Si falla un detalle, lanzamos una excepción
                 throw new Exception("Error al guardar el detalle del producto ID: " . $item['id']);
             }
-            // ¡IMPORTANTE! El Trigger 'tr_actualizar_stock_compra' 
-            // se disparará aquí automáticamente por cada inserción.
         }
 
         // 6. Si todo salió bien: COMMIT
-        // Confirmamos todos los cambios en la base de datos.
         $conexion->commit();
         
-        // Redirigir a la vista con mensaje de éxito
-        header("Location: ../vistas/registrar_compra.php?status=success");
+        // ⭐ ¡CORRECCIÓN! Usar 'page=registrar_compra'
+        header("Location: ../vistas/dashboard_admin.php?page=registrar_compra&status=success");
         exit;
 
     } catch (Exception $e) {
         // 7. Si algo salió mal: ROLLBACK
-        // Deshacemos todos los cambios de esta operación.
         $conexion->rollback();
         
-        // Redirigir a la vista con mensaje de error
-        // (En un sistema real, guardaríamos $e->getMessage() en un log)
-        header("Location: ../vistas/registrar_compra.php?status=error");
+        // ⭐ ¡CORRECCIÓN! Usar 'page=registrar_compra'
+        header("Location: ../vistas/dashboard_admin.php?page=registrar_compra&status=error");
         exit;
     }
 
 } else {
-    // Si no es POST, redirigir
-    header("Location: ../vistas/dashboard_admin.php");
+    // Si no es POST, redirigir a la vista de compras general
+    // ⭐ ¡CORRECCIÓN! Usar 'page=ventas' o la vista que muestre la lista de compras/ventas
+    header("Location: ../vistas/dashboard_admin.php?page=ventas");
     exit;
 }
 ?>

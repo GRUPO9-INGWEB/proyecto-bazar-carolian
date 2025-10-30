@@ -14,7 +14,7 @@ $accion = $_REQUEST['accion'] ?? '';
 switch ($accion) {
     case 'registrar':
     case 'editar':
-        // Verifica que todos los campos del formulario estén presentes
+        // Se añade la validación de 'estado' para el caso 'editar'
         if (
             isset($_POST['nombre_completo']) &&
             isset($_POST['documento_numero']) &&
@@ -23,11 +23,13 @@ switch ($accion) {
             $datos = [
                 'id_cliente' => $_POST['id_cliente'] ?? null,
                 'nombre_completo' => $_POST['nombre_completo'],
-                'documento_tipo' => $_POST['documento_tipo'], // CORREGIDO
-                'documento_numero' => $_POST['documento_numero'], // CORREGIDO
+                'documento_tipo' => $_POST['documento_tipo'], 
+                'documento_numero' => $_POST['documento_numero'], 
                 'telefono' => $_POST['telefono'] ?? '',
                 'direccion' => $_POST['direccion'] ?? '',
-                'email' => $_POST['email'] ?? '' // Añadido
+                'email' => $_POST['email'] ?? '',
+                // 🌟 CORRECCIÓN: Leer el campo estado si existe (es obligatorio en el modal de edición)
+                'estado' => $_POST['estado'] ?? 'A' // Se asume 'A' si no viene (e.g. en registro)
             ];
 
             if ($accion === 'registrar') {
@@ -39,7 +41,8 @@ switch ($accion) {
                     $respuesta['mensaje'] = 'Error al registrar el cliente.';
                 }
             } else { // editar
-                if (actualizarCliente($conexion, $datos)) {
+                // 🌟 CORRECCIÓN: La función actualizarCliente en el modelo usará el campo 'estado'
+                if (actualizarCliente($conexion, $datos)) { 
                     $respuesta['exito'] = true;
                     $respuesta['mensaje'] = 'Cliente actualizado exitosamente.';
                 } else {
@@ -66,6 +69,7 @@ switch ($accion) {
         break;
 
     case 'obtener_por_id':
+        // No se requiere cambio aquí, solo se asegura que el modelo devuelva el estado
         if (isset($_GET['id_cliente'])) {
             $id_cliente = $_GET['id_cliente'];
             $datos_cliente = obtenerClientePorId($conexion, $id_cliente);
@@ -82,7 +86,6 @@ switch ($accion) {
         break;
 
     default:
-        // Si no es una petición AJAX, el script termina aquí
         exit(); 
 }
 
