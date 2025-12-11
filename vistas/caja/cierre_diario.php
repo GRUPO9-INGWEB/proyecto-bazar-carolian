@@ -69,7 +69,7 @@
         <?php endif; ?>
     </div>
 
-    <div class="card-body table-responsive">
+    <div class="card-body table-responsive table-wrapper-scroll">
         <table class="table table-sm table-bordered align-middle mb-0">
             <thead class="table-light">
                 <tr>

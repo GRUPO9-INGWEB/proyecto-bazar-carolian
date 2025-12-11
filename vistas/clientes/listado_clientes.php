@@ -91,7 +91,7 @@ if (!isset($orden)) {
         </span>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <div class="table-responsive table-wrapper-scroll">
             <table class="table table-striped table-sm align-middle mb-0 table-modern">
                 <thead>
                     <tr>

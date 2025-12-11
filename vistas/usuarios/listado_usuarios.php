@@ -88,7 +88,8 @@ if (!isset($orden))   $orden   = "DESC";
         </span>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <!-- 👇 Scroll + header fijo -->
+        <div class="table-responsive table-wrapper-scroll">
             <table class="table table-striped table-sm align-middle mb-0 table-modern">
                 <thead>
                     <tr>

@@ -274,6 +274,32 @@ body.app-body.bg-app {
     background-color: #f3f4ff;
 }
 
+/* --- TABLAS CON SCROLL VERTICAL Y HEADER FIJO --- */
+/* contenedor que limita el alto de la tabla y permite scroll interior */
+.table-wrapper-scroll {
+    max-height: 60vh;        /* ajusta este valor según prefieras */
+    overflow-y: auto;
+}
+
+/* encabezados fijos dentro del contenedor con scroll */
+.table-wrapper-scroll table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: #f9fafb; /* mismo fondo que el thead */
+}
+
+/* línea sutil debajo del thead */
+.table-wrapper-scroll table thead th::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: rgba(148, 163, 184, 0.45);
+}
+
 /* ---------- FOOTER ---------- */
 .app-footer {
     color: #6b7280;

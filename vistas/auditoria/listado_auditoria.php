@@ -87,7 +87,7 @@
         <span>Eventos de auditoría</span>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <div class="table-responsive table-wrapper-scroll">
             <table class="table table-sm table-hover table-bordered align-middle mb-0">
                 <thead class="table-light">
                     <tr class="text-muted small">

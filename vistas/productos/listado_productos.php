@@ -9,6 +9,34 @@ if (!isset($orden))   $orden   = "DESC";
 $hoy = new DateTime();
 ?>
 
+<!-- ESTILOS SOLO PARA TABLAS CON SCROLL (puedes mover esto a tu CSS global) -->
+<style>
+    /* contenedor que da alto máximo y scroll vertical */
+    .table-wrapper-scroll {
+        max-height: 60vh;          /* puedes subir/bajar este valor */
+        overflow-y: auto;
+    }
+
+    /* encabezado fijo mientras haces scroll */
+    .table-wrapper-scroll table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background-color: #ffffff;  /* o var(--bs-body-bg) si usas variables */
+    }
+
+    /* opcional: sombra ligera arriba del header */
+    .table-wrapper-scroll table thead th::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 1px;
+        background: rgba(0,0,0,0.07);
+    }
+</style>
+
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
     <div>
         <h3 class="mb-1">
@@ -92,7 +120,8 @@ $hoy = new DateTime();
         </span>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
+        <!-- AQUÍ VA EL SCROLL VERTICAL -->
+        <div class="table-responsive table-wrapper-scroll">
             <table class="table table-striped table-sm align-middle mb-0 table-modern">
                 <thead>
                     <tr>
@@ -130,21 +159,17 @@ $hoy = new DateTime();
                                 <?php else: ?>
                                     <?php
                                     $fechaV = new DateTime($p["fecha_caducidad"]);
-                                    // %r incluye signo (+ / -), %a = días de diferencia
                                     $dias = (int)$hoy->diff($fechaV)->format('%r%a');
 
                                     if ($dias < 0) {
-                                        // Ya vencido
                                         $clase = "bg-danger";
                                         $icono = "bi-x-octagon";
                                         $texto = "Vencido (" . $fechaV->format("d/m/Y") . ")";
                                     } elseif ($dias <= 30) {
-                                        // Por vencer en 30 días o menos
                                         $clase = "bg-warning text-dark";
                                         $icono = "bi-exclamation-triangle";
                                         $texto = "Por vencer (" . $fechaV->format("d/m/Y") . ")";
                                     } else {
-                                        // Ok
                                         $clase = "bg-success";
                                         $icono = "bi-check-circle";
                                         $texto = $fechaV->format("d/m/Y");

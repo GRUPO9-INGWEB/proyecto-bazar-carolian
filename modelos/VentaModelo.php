@@ -266,9 +266,9 @@ class VentaModelo extends Conexion
             /* 5) INSERTAR DETALLE */
 
             $sqlDet = "INSERT INTO tb_detalle_ventas
-                       (id_venta, id_producto, id_lote, cantidad, precio_venta, descuento, subtotal)
+                       (id_venta, id_producto, cantidad, precio_venta, descuento, subtotal)
                        VALUES
-                       (:id_venta, :id_producto, NULL, :cantidad, :precio, 0, :subtotal)";
+                       (:id_venta, :id_producto, :cantidad, :precio, 0, :subtotal)";
             $stmtDet = $this->conexion->prepare($sqlDet);
 
             foreach ($detalles as $det) {
