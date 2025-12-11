@@ -9,38 +9,52 @@ class ProductoModelo extends Conexion {
     }
 
     // Listar productos con el nombre de la categoría (con búsqueda y orden)
-    public function obtenerTodosProductos($buscar = "", $orden = "DESC") {
-        // Aseguramos que el orden solo sea ASC o DESC
-        $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+public function obtenerTodosProductos($buscar = "", $orden = "DESC") {
+    // Aseguramos que el orden solo sea ASC o DESC
+    $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
 
-        if ($buscar === "") {
-            // Sin filtro de búsqueda
-            $sql = "SELECT p.*, c.nombre_categoria
-                    FROM tb_productos p
-                    INNER JOIN tb_categorias c ON p.id_categoria = c.id_categoria
-                    ORDER BY p.id_producto $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $consulta->execute();
-        } else {
-            // Con filtro de búsqueda
-            $sql = "SELECT p.*, c.nombre_categoria
-                    FROM tb_productos p
-                    INNER JOIN tb_categorias c ON p.id_categoria = c.id_categoria
-                    WHERE
-                        p.codigo_interno       LIKE :buscar
-                        OR p.codigo_barras     LIKE :buscar
-                        OR p.nombre_producto   LIKE :buscar
-                        OR p.descripcion_producto LIKE :buscar
-                        OR c.nombre_categoria  LIKE :buscar
-                    ORDER BY p.id_producto $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $patron = "%" . $buscar . "%";
-            $consulta->bindParam(":buscar", $patron, PDO::PARAM_STR);
-            $consulta->execute();
-        }
+    // Limpiamos espacios
+    $buscar = trim($buscar);
 
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    if ($buscar === "") {
+        // Sin filtro de búsqueda
+        $sql = "SELECT p.*, c.nombre_categoria
+                FROM tb_productos p
+                INNER JOIN tb_categorias c ON p.id_categoria = c.id_categoria
+                ORDER BY p.id_producto $orden";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute();
+    } else {
+        // Con filtro de búsqueda – usamos placeholders distintos
+        $sql = "SELECT p.*, c.nombre_categoria
+                FROM tb_productos p
+                INNER JOIN tb_categorias c ON p.id_categoria = c.id_categoria
+                WHERE
+                    p.codigo_interno         LIKE :b1
+                    OR p.codigo_barras       LIKE :b2
+                    OR p.nombre_producto     LIKE :b3
+                    OR p.descripcion_producto LIKE :b4
+                    OR c.nombre_categoria    LIKE :b5
+                ORDER BY p.id_producto $orden";
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $patron = '%' . $buscar . '%';
+
+        $params = [
+            ':b1' => $patron,
+            ':b2' => $patron,
+            ':b3' => $patron,
+            ':b4' => $patron,
+            ':b5' => $patron,
+        ];
+
+        $consulta->execute($params);
     }
+
+    return $consulta->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     // Categorías activas (para el combo)
     public function obtenerCategoriasActivas() {

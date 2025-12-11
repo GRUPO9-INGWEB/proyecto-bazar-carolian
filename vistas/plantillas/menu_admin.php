@@ -2,63 +2,79 @@
 // vistas/plantillas/menu_admin.php
 // Usa la variable $modulo que viene desde panel_admin.php
 ?>
-        <aside class="col-md-3 col-lg-2 mb-3">
-            <div class="list-group shadow-sm">
-                <a href="panel_admin.php"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'inicio') ? 'active' : ''; ?>">
-                    Inicio
-                </a>
+        <aside class="col-12 col-md-3 col-lg-2 mb-3 sidebar">
+            <div class="sidebar-inner shadow-sm">
+                <div class="sidebar-title">Administración</div>
 
-                <a href="panel_admin.php?modulo=usuarios&accion=listar"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'usuarios') ? 'active' : ''; ?>">
-                    Gestión de usuarios
-                </a>
+                <nav class="sidebar-nav">
 
-                <a href="panel_admin.php?modulo=productos"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'productos') ? 'active' : ''; ?>">
-                    Productos
-                </a>
+                    <a href="panel_admin.php"
+                       class="sidebar-link <?php echo ($modulo === 'inicio') ? 'active' : ''; ?>">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Inicio</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=categorias"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'categorias') ? 'active' : ''; ?>">
-                    Categorías
-                </a>
+                    <a href="panel_admin.php?modulo=usuarios&accion=listar"
+                       class="sidebar-link <?php echo ($modulo === 'usuarios') ? 'active' : ''; ?>">
+                        <i class="bi bi-people"></i>
+                        <span>Gestión de usuarios</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=clientes"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'clientes') ? 'active' : ''; ?>">
-                    Clientes
-                </a>
+                    <a href="panel_admin.php?modulo=productos"
+                       class="sidebar-link <?php echo ($modulo === 'productos') ? 'active' : ''; ?>">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Productos</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=proveedores"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'proveedores') ? 'active' : ''; ?>">
-                    Proveedores
-                </a>
+                    <a href="panel_admin.php?modulo=categorias"
+                       class="sidebar-link <?php echo ($modulo === 'categorias') ? 'active' : ''; ?>">
+                        <i class="bi bi-tags"></i>
+                        <span>Categorías</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=compras"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'compras') ? 'active' : ''; ?>">
-                    Compras (ingreso mercadería)
-                </a>
+                    <a href="panel_admin.php?modulo=clientes"
+                       class="sidebar-link <?php echo ($modulo === 'clientes') ? 'active' : ''; ?>">
+                        <i class="bi bi-person-badge"></i>
+                        <span>Clientes</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=ventas"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'ventas') ? 'active' : ''; ?>">
-                    Ventas
-                </a>
+                    <a href="panel_admin.php?modulo=proveedores"
+                       class="sidebar-link <?php echo ($modulo === 'proveedores') ? 'active' : ''; ?>">
+                        <i class="bi bi-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=reportes"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'reportes') ? 'active' : ''; ?>">
-                    Reportes
-                </a>
+                    <a href="panel_admin.php?modulo=compras"
+                       class="sidebar-link <?php echo ($modulo === 'compras') ? 'active' : ''; ?>">
+                        <i class="bi bi-bag-plus"></i>
+                        <span>Compras (ingreso mercadería)</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=auditoria"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'auditoria') ? 'active' : ''; ?>">
-                    Auditoría
-                </a>
+                    <a href="panel_admin.php?modulo=ventas"
+                       class="sidebar-link <?php echo ($modulo === 'ventas') ? 'active' : ''; ?>">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Ventas</span>
+                    </a>
 
-                <a href="panel_admin.php?modulo=caja"
-                   class="list-group-item list-group-item-action <?php echo ($modulo === 'caja') ? 'active' : ''; ?>">
-                    Caja / cierre diario
-                </a>
+                    <a href="panel_admin.php?modulo=reportes"
+                       class="sidebar-link <?php echo ($modulo === 'reportes') ? 'active' : ''; ?>">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        <span>Reportes</span>
+                    </a>
+
+                    <a href="panel_admin.php?modulo=auditoria"
+                       class="sidebar-link <?php echo ($modulo === 'auditoria') ? 'active' : ''; ?>">
+                        <i class="bi bi-search"></i>
+                        <span>Auditoría</span>
+                    </a>
+
+                    <a href="panel_admin.php?modulo=caja"
+                       class="sidebar-link <?php echo ($modulo === 'caja') ? 'active' : ''; ?>">
+                        <i class="bi bi-safe2"></i>
+                        <span>Caja / cierre diario</span>
+                    </a>
+                </nav>
             </div>
         </aside>
 
-        <main class="col-md-9 col-lg-10">
+        <main class="col-12 col-md-9 col-lg-10 app-main-content">

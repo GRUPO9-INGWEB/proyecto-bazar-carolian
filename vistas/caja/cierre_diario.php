@@ -1,12 +1,16 @@
 <?php
 // vistas/caja/cierre_diario.php
 ?>
-<h3>Caja / cierre diario</h3>
+<h3 class="mb-1">
+    <i class="bi bi-cash-stack me-2"></i>Caja / cierre diario
+</h3>
 <p class="text-muted">
-    Resumen de ventas por rango de fechas y tipo de pago.
+    Resumen de las ventas por rango de fechas y tipo de pago. Desde aquí también
+    puede generar el PDF de cierre para el periodo seleccionado.
 </p>
 
-<div class="card mb-3">
+<!-- Filtros de fecha -->
+<div class="card shadow-sm mb-3">
     <div class="card-body">
         <form class="row g-3" method="get" action="panel_admin.php">
             <input type="hidden" name="modulo" value="caja">
@@ -35,9 +39,10 @@
 
             <div class="col-md-6 d-flex align-items-end justify-content-end">
                 <button type="submit" class="btn btn-primary me-2">
-                    Filtrar
+                    <i class="bi bi-funnel me-1"></i>Filtrar
                 </button>
 
+                <!-- Mantengo el mismo comportamiento: el controlador revisa $_GET["limpiar"] -->
                 <button
                     type="submit"
                     name="limpiar"
@@ -51,12 +56,21 @@
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header">
-        Resumen de caja
+<!-- Resumen principal -->
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Resumen de caja</span>
+
+        <?php if (!empty($resumen)): ?>
+            <small class="text-muted">
+                Del <strong><?php echo htmlspecialchars($fecha_desde); ?></strong>
+                al <strong><?php echo htmlspecialchars($fecha_hasta); ?></strong>
+            </small>
+        <?php endif; ?>
     </div>
+
     <div class="card-body table-responsive">
-        <table class="table table-sm table-bordered align-middle">
+        <table class="table table-sm table-bordered align-middle mb-0">
             <thead class="table-light">
                 <tr>
                     <th style="width: 120px;">Fecha</th>
@@ -77,13 +91,13 @@
                             <?php echo (int)$fila['cantidad_ventas']; ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($fila['total_subtotal'], 2); ?>
+                            S/ <?php echo number_format($fila['total_subtotal'], 2); ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($fila['total_igv'], 2); ?>
+                            S/ <?php echo number_format($fila['total_igv'], 2); ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($fila['total_general'], 2); ?>
+                            S/ <?php echo number_format($fila['total_general'], 2); ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -104,13 +118,13 @@
                             <?php echo (int)$totalCant; ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($totalSub, 2); ?>
+                            S/ <?php echo number_format($totalSub, 2); ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($totalIgv, 2); ?>
+                            S/ <?php echo number_format($totalIgv, 2); ?>
                         </td>
                         <td class="text-end">
-                            <?php echo number_format($totalGral, 2); ?>
+                            S/ <?php echo number_format($totalGral, 2); ?>
                         </td>
                     </tr>
                 </tfoot>
@@ -138,6 +152,7 @@
             >
 
             <button type="submit" class="btn btn-danger">
+                <i class="bi bi-file-earmark-pdf me-1"></i>
                 Generar PDF
             </button>
         </form>

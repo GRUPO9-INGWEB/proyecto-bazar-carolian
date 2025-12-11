@@ -21,6 +21,10 @@ class VentaModelo extends Conexion
        ======================================================== */
     public function obtenerVentas($texto = "", $orden = "recientes", $tipo_filtro = "TODOS")
     {
+        // Normalizamos un poco
+        $texto       = trim((string)$texto);
+        $tipo_filtro = trim((string)$tipo_filtro);
+
         $sql = "SELECT
                     v.*,
                     tc.nombre_tipo,
@@ -33,24 +37,33 @@ class VentaModelo extends Conexion
                     ON v.id_tipo_comprobante = tc.id_tipo_comprobante
                 LEFT JOIN tb_clientes c
                     ON v.id_cliente = c.id_cliente
-                WHERE 1=1";
+                WHERE 1 = 1";
+
+        // Usamos SOLO placeholders posicionales (?) para evitar HY093
         $params = [];
 
         // Búsqueda por texto: cliente, documento o comprobante
         if ($texto !== "") {
             $sql .= " AND (
-                        c.numero_documento LIKE :texto
-                        OR c.razon_social LIKE :texto
-                        OR CONCAT(c.nombres, ' ', c.apellidos) LIKE :texto
-                        OR CONCAT(tc.nombre_tipo, ' ', v.serie_comprobante, '-', v.numero_comprobante) LIKE :texto
+                        c.numero_documento LIKE ?
+                        OR c.razon_social LIKE ?
+                        OR CONCAT(c.nombres, ' ', c.apellidos) LIKE ?
+                        OR CONCAT(tc.nombre_tipo, ' ', v.serie_comprobante, '-', v.numero_comprobante) LIKE ?
                     )";
-            $params[":texto"] = "%{$texto}%";
+
+            $patron = '%' . $texto . '%';
+
+            // 4 ?  =>  4 valores
+            $params[] = $patron; // numero_documento
+            $params[] = $patron; // razon_social
+            $params[] = $patron; // nombres + apellidos
+            $params[] = $patron; // tipo + serie-numero
         }
 
-        // Filtro por tipo de comprobante
+        // Filtro por tipo de comprobante (TICKET / BOLETA / FACTURA)
         if ($tipo_filtro !== "TODOS" && $tipo_filtro !== "") {
-            $sql .= " AND UPPER(tc.nombre_tipo) = :tipo";
-            $params[":tipo"] = strtoupper($tipo_filtro);
+            $sql .= " AND UPPER(tc.nombre_tipo) = ?";
+            $params[] = strtoupper($tipo_filtro);
         }
 
         // Orden
@@ -447,31 +460,29 @@ class VentaModelo extends Conexion
     }
 
     // ===================== RESUMEN DE CAJA / CIERRE DIARIO =====================
-public function obtenerResumenCaja(string $fecha_desde, string $fecha_hasta): array
-{
-    // Normalizamos fechas (solo parte YYYY-MM-DD)
-    $fecha_desde = substr($fecha_desde, 0, 10);
-    $fecha_hasta = substr($fecha_hasta, 0, 10);
+    public function obtenerResumenCaja(string $fecha_desde, string $fecha_hasta): array
+    {
+        // Normalizamos fechas (solo parte YYYY-MM-DD)
+        $fecha_desde = substr($fecha_desde, 0, 10);
+        $fecha_hasta = substr($fecha_hasta, 0, 10);
 
-    $sql = "SELECT
-                DATE(v.fecha_venta)     AS fecha,
-                v.tipo_pago             AS tipo_pago,
-                COUNT(*)                AS cantidad_ventas,
-                SUM(v.subtotal)         AS total_subtotal,
-                SUM(v.igv)              AS total_igv,
-                SUM(v.total)            AS total_general
-            FROM tb_ventas v
-            WHERE DATE(v.fecha_venta) BETWEEN :desde AND :hasta
-            GROUP BY DATE(v.fecha_venta), v.tipo_pago
-            ORDER BY fecha ASC, tipo_pago ASC";
+        $sql = "SELECT
+                    DATE(v.fecha_venta)     AS fecha,
+                    v.tipo_pago             AS tipo_pago,
+                    COUNT(*)                AS cantidad_ventas,
+                    SUM(v.subtotal)         AS total_subtotal,
+                    SUM(v.igv)              AS total_igv,
+                    SUM(v.total)            AS total_general
+                FROM tb_ventas v
+                WHERE DATE(v.fecha_venta) BETWEEN :desde AND :hasta
+                GROUP BY DATE(v.fecha_venta), v.tipo_pago
+                ORDER BY fecha ASC, tipo_pago ASC";
 
-    $stmt = $this->conexion->prepare($sql);
-    $stmt->bindParam(':desde', $fecha_desde, PDO::PARAM_STR);
-    $stmt->bindParam(':hasta', $fecha_hasta, PDO::PARAM_STR);
-    $stmt->execute();
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':desde', $fecha_desde, PDO::PARAM_STR);
+        $stmt->bindParam(':hasta', $fecha_hasta, PDO::PARAM_STR);
+        $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

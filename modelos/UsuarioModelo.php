@@ -27,43 +27,59 @@ class UsuarioModelo extends Conexion {
      * $orden: 'ASC' o 'DESC' (por defecto DESC = más recientes primero)
      */
     public function obtenerTodosUsuarios($buscar = "", $orden = "DESC") {
-        // Aseguramos que el orden solo sea ASC o DESC
-        $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+    // Aseguramos que el orden solo sea ASC o DESC
+    $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
 
-        if ($buscar === "") {
-            // Sin filtro
-            $sql = "SELECT u.id_usuario, u.nombre_usuario, u.nombres, u.apellidos,
-                           u.dni, u.correo, u.telefono, u.estado,
-                           r.nombre_rol
-                    FROM tb_usuarios u
-                    INNER JOIN tb_roles r ON u.id_rol = r.id_rol
-                    ORDER BY u.id_usuario $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $consulta->execute();
-        } else {
-            // Con filtro de búsqueda
-            $sql = "SELECT u.id_usuario, u.nombre_usuario, u.nombres, u.apellidos,
-                           u.dni, u.correo, u.telefono, u.estado,
-                           r.nombre_rol
-                    FROM tb_usuarios u
-                    INNER JOIN tb_roles r ON u.id_rol = r.id_rol
-                    WHERE
-                        u.nombre_usuario LIKE :buscar
-                        OR u.nombres     LIKE :buscar
-                        OR u.apellidos   LIKE :buscar
-                        OR u.dni         LIKE :buscar
-                        OR u.correo      LIKE :buscar
-                        OR u.telefono    LIKE :buscar
-                        OR r.nombre_rol  LIKE :buscar
-                    ORDER BY u.id_usuario $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $patron = "%" . $buscar . "%";
-            $consulta->bindParam(":buscar", $patron, PDO::PARAM_STR);
-            $consulta->execute();
-        }
+    // Quitamos espacios extra
+    $buscar = trim($buscar);
 
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+    if ($buscar === "") {
+        // Sin filtro de búsqueda: igual que antes
+        $sql = "SELECT u.id_usuario, u.nombre_usuario, u.nombres, u.apellidos,
+                       u.dni, u.correo, u.telefono, u.estado,
+                       r.nombre_rol
+                FROM tb_usuarios u
+                INNER JOIN tb_roles r ON u.id_rol = r.id_rol
+                ORDER BY u.id_usuario $orden";
+        $consulta = $this->conexion->prepare($sql);
+        $consulta->execute();
+    } else {
+        // Con filtro de búsqueda: usamos placeholders distintos
+        $sql = "SELECT u.id_usuario, u.nombre_usuario, u.nombres, u.apellidos,
+                       u.dni, u.correo, u.telefono, u.estado,
+                       r.nombre_rol
+                FROM tb_usuarios u
+                INNER JOIN tb_roles r ON u.id_rol = r.id_rol
+                WHERE
+                    u.nombre_usuario LIKE :b1
+                    OR u.nombres     LIKE :b2
+                    OR u.apellidos   LIKE :b3
+                    OR u.dni         LIKE :b4
+                    OR u.correo      LIKE :b5
+                    OR u.telefono    LIKE :b6
+                    OR r.nombre_rol  LIKE :b7
+                ORDER BY u.id_usuario $orden";
+
+        $consulta = $this->conexion->prepare($sql);
+
+        $patron = '%' . $buscar . '%';
+
+        $params = [
+            ':b1' => $patron,
+            ':b2' => $patron,
+            ':b3' => $patron,
+            ':b4' => $patron,
+            ':b5' => $patron,
+            ':b6' => $patron,
+            ':b7' => $patron,
+        ];
+
+        $consulta->execute($params);
     }
+
+    return $consulta->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     // Obtener todos los roles (para el combo)
     public function obtenerRoles() {

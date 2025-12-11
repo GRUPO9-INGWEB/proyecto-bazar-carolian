@@ -51,7 +51,7 @@ class AuditoriaModelo extends Conexion
     }
 
     /**
-     * Listado simple (si lo quieres seguir usando en algún lado)
+     * Listado simple
      */
     public function obtenerAuditoria($limite = 200): array
     {
@@ -72,14 +72,6 @@ class AuditoriaModelo extends Conexion
 
     /**
      * Búsqueda con filtros para el módulo Auditoría
-     *
-     * $filtros = [
-     *   'fecha_desde' => 'Y-m-d',
-     *   'fecha_hasta' => 'Y-m-d',
-     *   'modulo'      => 'VENTAS' / 'TODOS',
-     *   'texto'       => 'REGISTRAR',
-     *   'usuario'     => 'admin'
-     * ]
      */
     public function buscarEventos(array $filtros = []): array
     {
@@ -93,18 +85,19 @@ class AuditoriaModelo extends Conexion
 
         $params = [];
 
-        $fechaDesde = $filtros['fecha_desde'] ?? null;
-        $fechaHasta = $filtros['fecha_hasta'] ?? null;
-        $modulo     = $filtros['modulo']      ?? 'TODOS';
-        $texto      = trim($filtros['texto']  ?? '');
-        $usuario    = trim($filtros['usuario'] ?? '');
+        $fechaDesde = isset($filtros['fecha_desde']) ? trim((string)$filtros['fecha_desde']) : '';
+        $fechaHasta = isset($filtros['fecha_hasta']) ? trim((string)$filtros['fecha_hasta']) : '';
+        $moduloRaw  = $filtros['modulo'] ?? 'TODOS';
+        $modulo     = strtoupper(trim((string)$moduloRaw));
+        $texto      = trim((string)($filtros['texto']   ?? ''));
+        $usuario    = trim((string)($filtros['usuario'] ?? ''));
 
-        if ($fechaDesde) {
+        if ($fechaDesde !== '') {
             $sql .= " AND a.fecha_hora >= :desde";
             $params[':desde'] = $fechaDesde . " 00:00:00";
         }
 
-        if ($fechaHasta) {
+        if ($fechaHasta !== '') {
             $sql .= " AND a.fecha_hora <= :hasta";
             $params[':hasta'] = $fechaHasta . " 23:59:59";
         }
@@ -116,11 +109,15 @@ class AuditoriaModelo extends Conexion
 
         if ($texto !== '') {
             $sql .= " AND (
-                        a.accion        LIKE :texto
-                     OR a.descripcion   LIKE :texto
-                     OR a.tabla_afectada LIKE :texto
+                        a.accion          LIKE :textoAccion
+                     OR a.descripcion     LIKE :textoDesc
+                     OR a.tabla_afectada  LIKE :textoTabla
                     )";
-            $params[':texto'] = '%' . $texto . '%';
+
+            $like = '%' . $texto . '%';
+            $params[':textoAccion'] = $like;
+            $params[':textoDesc']   = $like;
+            $params[':textoTabla']  = $like;
         }
 
         if ($usuario !== '') {

@@ -13,79 +13,93 @@ class CategoriaModelo extends Conexion {
      * $buscar: texto a buscar en nombre o descripción
      * $orden: ASC o DESC (por defecto DESC = más recientes primero)
      */
-    public function obtenerTodasCategorias($buscar = "", $orden = "DESC") {
-        $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+    public function obtenerTodasCategorias(string $buscar = "", string $orden = "DESC"): array {
+        // Normalizamos orden y texto
+        $orden  = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+        $buscar = trim($buscar);
 
         if ($buscar === "") {
-            $sql = "SELECT * FROM tb_categorias ORDER BY id_categoria $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $consulta->execute();
-        } else {
+            // Sin filtro
             $sql = "SELECT *
                     FROM tb_categorias
-                    WHERE nombre_categoria LIKE :buscar
-                       OR descripcion_categoria LIKE :buscar
                     ORDER BY id_categoria $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $patron = "%" . $buscar . "%";
-            $consulta->bindParam(":buscar", $patron, PDO::PARAM_STR);
-            $consulta->execute();
+
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+        } else {
+            // Con filtro de búsqueda (usamos ? ? para evitar el HY093)
+            $sql = "SELECT *
+                    FROM tb_categorias
+                    WHERE  nombre_categoria      LIKE ?
+                       OR descripcion_categoria LIKE ?
+                    ORDER BY id_categoria $orden";
+
+            $stmt = $this->conexion->prepare($sql);
+
+            $patron = '%' . $buscar . '%';
+            // Dos ? → dos valores en el array
+            $stmt->execute([$patron, $patron]);
         }
 
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function registrarCategoria($nombre, $descripcion, $estado = 1) {
-        $sql = "INSERT INTO tb_categorias (nombre_categoria, descripcion_categoria, estado)
-                VALUES (:nombre, :descripcion, :estado)";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
-            ":nombre"      => $nombre,
-            ":descripcion" => $descripcion,
-            ":estado"      => $estado,
+    public function registrarCategoria(string $nombre, string $descripcion, int $estado = 1): bool {
+        $sql = "INSERT INTO tb_categorias
+                    (nombre_categoria, descripcion_categoria, estado)
+                VALUES
+                    (:nombre, :descripcion, :estado)";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
+            ':nombre'      => $nombre,
+            ':descripcion' => $descripcion,
+            ':estado'      => $estado,
         ]);
     }
 
-    public function obtenerCategoriaPorId($id_categoria) {
-        $sql = "SELECT * FROM tb_categorias WHERE id_categoria = :id";
-        $consulta = $this->conexion->prepare($sql);
-        $consulta->bindParam(":id", $id_categoria, PDO::PARAM_INT);
-        $consulta->execute();
-        return $consulta->fetch(PDO::FETCH_ASSOC);
-    }
-
-    public function actualizarCategoria($id_categoria, $nombre, $descripcion) {
-        $sql = "UPDATE tb_categorias
-                SET nombre_categoria = :nombre,
-                    descripcion_categoria = :descripcion
+    public function obtenerCategoriaPorId(int $id_categoria): ?array {
+        $sql = "SELECT *
+                FROM tb_categorias
                 WHERE id_categoria = :id";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
-            ":nombre"      => $nombre,
-            ":descripcion" => $descripcion,
-            ":id"          => $id_categoria,
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':id', $id_categoria, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $fila ?: null;
+    }
+
+    public function actualizarCategoria(int $id_categoria, string $nombre, string $descripcion): bool {
+        $sql = "UPDATE tb_categorias
+                SET nombre_categoria      = :nombre,
+                    descripcion_categoria = :descripcion
+                WHERE id_categoria        = :id";
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
+            ':nombre'      => $nombre,
+            ':descripcion' => $descripcion,
+            ':id'          => $id_categoria,
         ]);
     }
 
-    public function cambiarEstadoCategoria($id_categoria, $estado) {
+    public function cambiarEstadoCategoria(int $id_categoria, int $estado): bool {
         $sql = "UPDATE tb_categorias
                 SET estado = :estado
                 WHERE id_categoria = :id";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
-            ":estado" => $estado,
-            ":id"     => $id_categoria,
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
+            ':estado' => $estado,
+            ':id'     => $id_categoria,
         ]);
     }
 
-    public function obtenerCategoriasActivas() {
-    $sql = "SELECT id_categoria, nombre_categoria
-            FROM tb_categorias
-            WHERE estado = 1
-            ORDER BY nombre_categoria ASC";
-    $consulta = $this->conexion->prepare($sql);
-    $consulta->execute();
-    return $consulta->fetchAll(PDO::FETCH_ASSOC);
-}
-
+    public function obtenerCategoriasActivas(): array {
+        $sql = "SELECT id_categoria, nombre_categoria
+                FROM tb_categorias
+                WHERE estado = 1
+                ORDER BY nombre_categoria ASC";
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

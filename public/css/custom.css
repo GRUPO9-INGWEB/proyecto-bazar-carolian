@@ -1,0 +1,280 @@
+/* =========================================================
+   TIPOGRAFÍA BASE
+   ========================================================= */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Tamaños pequeños reutilizables */
+.extra-small {
+    font-size: 0.72rem;
+}
+
+/* =========================================================
+   LOGIN (pantalla inicial)
+   ========================================================= */
+body.bg-login {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 0% 0%, #0d6efd22, transparent 60%),
+        radial-gradient(circle at 100% 100%, #20c99722, transparent 55%),
+        linear-gradient(135deg, #f8f9ff 0%, #eef1ff 50%, #f8f9fa 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.login-wrapper {
+    padding: 1.5rem;
+}
+
+.login-card {
+    max-width: 430px;
+    width: 100%;
+    border-radius: 1.5rem;
+    backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(148, 163, 184, 0.25);
+}
+
+.login-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0d6efd, #6610f2);
+    color: #fff;
+    font-size: 1.7rem;
+    box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4);
+}
+
+.login-form .input-group-lg > .form-control,
+.login-form .input-group-lg > .input-group-text {
+    border-radius: 0.85rem;
+}
+
+.login-form .input-group .form-control {
+    box-shadow: none !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.login-form .input-group:focus-within .form-control {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.18);
+    background-color: #ffffff;
+}
+
+.login-form .btn-outline-secondary {
+    border-color: #dee2e6;
+}
+
+.login-btn {
+    border-radius: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    box-shadow: 0 12px 25px rgba(13, 110, 253, 0.35);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(13, 110, 253, 0.4);
+}
+
+.text-primary-600 {
+    color: #0d6efd;
+}
+
+.text-primary-600:hover {
+    color: #0b5ed7;
+}
+
+@media (max-width: 576px) {
+    .login-card {
+        border-radius: 1rem;
+        padding-inline: 0.25rem;
+    }
+}
+
+/* =========================================================
+   PANEL / APLICACIÓN INTERNA
+   ========================================================= */
+:root {
+    --bc-primary: #0d6efd;
+    --bc-primary-soft: #e7f1ff;
+    --bc-bg: #f3f4f6;
+    --bc-sidebar-bg: #020617;
+    --bc-sidebar-text: #e5e7eb;
+    --bc-sidebar-muted: #9ca3af;
+}
+
+body.app-body.bg-app {
+    min-height: 100vh;
+    background-color: var(--bc-bg);
+}
+
+/* ---------- TOPBAR ---------- */
+.app-topbar {
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.app-topbar .navbar-brand {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0d6efd, #6366f1);
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+    /* sigue siendo col-12 / col-md-3 / col-lg-2 por Bootstrap */
+}
+
+.sidebar-inner {
+    background: radial-gradient(circle at 0 0, #0f172a, #020617);
+    color: var(--bc-sidebar-text);
+    border-radius: 1rem;
+    padding: 0.9rem 0.85rem;
+    height: 100%;
+}
+
+.sidebar-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--bc-sidebar-muted);
+    letter-spacing: 0.14em;
+    margin-bottom: 0.45rem;
+    padding-inline: 0.4rem;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.48rem 0.7rem;
+    border-radius: 0.65rem;
+    color: var(--bc-sidebar-text);
+    text-decoration: none;
+    font-size: 0.86rem;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+.sidebar-link i {
+    font-size: 1.05rem;
+    opacity: 0.9;
+}
+
+.sidebar-link:hover {
+    background: rgba(148, 163, 184, 0.18);
+    transform: translateX(1px);
+}
+
+.sidebar-link.active {
+    background: linear-gradient(135deg, #0d6efd, #6366f1);
+    color: #f9fafb;
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.45);
+}
+
+/* ---------- CONTENIDO PRINCIPAL ---------- */
+.app-main-content {
+    min-height: calc(100vh - 120px);
+}
+
+/* Cards genéricas */
+.app-main-content .card {
+    border-radius: 1.05rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Cards de métricas del dashboard */
+.card-metric {
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #ffffff, #f9fafb);
+    box-shadow:
+        0 12px 30px rgba(15, 23, 42, 0.08),
+        0 0 0 1px rgba(148, 163, 184, 0.15);
+}
+
+.card-metric-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #6b7280;
+    margin-bottom: 0.15rem;
+}
+
+.card-metric-value {
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.card-metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bc-primary-soft);
+    color: var(--bc-primary);
+    font-size: 1.2rem;
+}
+
+/* ---------- TABLAS ---------- */
+.card-table {
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: #fff;
+}
+
+.card-table .card-header {
+    background: linear-gradient(135deg, #f9fafb, #eef2ff);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.table-modern thead {
+    background-color: #f9fafb;
+}
+
+.table-modern thead th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    border-bottom-width: 1px;
+}
+
+.table-modern tbody tr:hover {
+    background-color: #f3f4ff;
+}
+
+/* ---------- FOOTER ---------- */
+.app-footer {
+    color: #6b7280;
+}

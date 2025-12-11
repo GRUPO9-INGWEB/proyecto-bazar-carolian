@@ -19,8 +19,10 @@ class CompraModelo extends Conexion
     /* ========================================================
        LISTADO DE COMPRAS
        ======================================================== */
-    public function obtenerCompras($texto = "", $orden = "recientes", $tipo_filtro = "TODOS")
+    public function obtenerCompras(string $texto = "", string $orden = "recientes", string $tipo_filtro = "TODOS"): array
     {
+        $texto = trim($texto);
+
         $sql = "SELECT
                     co.*,
                     p.razon_social,
@@ -32,22 +34,29 @@ class CompraModelo extends Conexion
                 INNER JOIN tb_tipos_comprobante tc
                     ON co.id_tipo_comprobante = tc.id_tipo_comprobante
                 WHERE 1 = 1";
+
+        // Usaremos SOLO placeholders posicionales (?) para evitar HY093
         $params = [];
 
         // Búsqueda por texto: proveedor, documento o comprobante
         if ($texto !== "") {
             $sql .= " AND (
-                        p.numero_documento LIKE :texto
-                        OR p.razon_social LIKE :texto
-                        OR CONCAT(tc.nombre_tipo, ' ', co.serie_comprobante, '-', co.numero_comprobante) LIKE :texto
+                        p.numero_documento LIKE ?
+                        OR p.razon_social LIKE ?
+                        OR CONCAT(tc.nombre_tipo, ' ', co.serie_comprobante, '-', co.numero_comprobante) LIKE ?
                     )";
-            $params[":texto"] = "%{$texto}%";
+
+            $patron = '%' . $texto . '%';
+            // 3 ? -> 3 valores
+            $params[] = $patron; // numero_documento
+            $params[] = $patron; // razon_social
+            $params[] = $patron; // comprobante concatenado
         }
 
         // Filtro por tipo de comprobante
         if ($tipo_filtro !== "TODOS" && $tipo_filtro !== "") {
-            $sql .= " AND UPPER(tc.nombre_tipo) = :tipo";
-            $params[":tipo"] = strtoupper($tipo_filtro);
+            $sql .= " AND UPPER(tc.nombre_tipo) = ?";
+            $params[] = strtoupper($tipo_filtro);
         }
 
         // Orden
@@ -245,11 +254,11 @@ class CompraModelo extends Conexion
 
             foreach ($detalles as $det) {
                 $stmtDet->execute([
-                    ":id_compra"    => $idCompra,
-                    ":id_producto"  => $det["id_producto"],
-                    ":cantidad"     => $det["cantidad"],
-                    ":precio_compra"=> $det["precio_compra"],
-                    ":subtotal"     => $det["subtotal"],
+                    ":id_compra"     => $idCompra,
+                    ":id_producto"   => $det["id_producto"],
+                    ":cantidad"      => $det["cantidad"],
+                    ":precio_compra" => $det["precio_compra"],
+                    ":subtotal"      => $det["subtotal"],
                 ]);
             }
 
@@ -327,39 +336,35 @@ class CompraModelo extends Conexion
         ];
     }
 
-    // modelos/CompraModelo.php (dentro de la clase CompraModelo)
+    public function obtenerComprasReporte(string $fecha_desde, string $fecha_hasta, string $tipo_filtro = "TODOS")
+    {
+        $sql = "SELECT
+                    c.*,
+                    tc.nombre_tipo,
+                    p.numero_documento,
+                    p.razon_social
+                FROM tb_compras c
+                INNER JOIN tb_tipos_comprobante tc
+                    ON c.id_tipo_comprobante = tc.id_tipo_comprobante
+                INNER JOIN tb_proveedores p
+                    ON c.id_proveedor = p.id_proveedor
+                WHERE DATE(c.fecha_compra) BETWEEN :desde AND :hasta";
 
-public function obtenerComprasReporte(string $fecha_desde, string $fecha_hasta, string $tipo_filtro = "TODOS")
-{
-    $sql = "SELECT
-                c.*,
-                tc.nombre_tipo,
-                p.numero_documento,
-                p.razon_social
-            FROM tb_compras c
-            INNER JOIN tb_tipos_comprobante tc
-                ON c.id_tipo_comprobante = tc.id_tipo_comprobante
-            INNER JOIN tb_proveedores p
-                ON c.id_proveedor = p.id_proveedor
-            WHERE DATE(c.fecha_compra) BETWEEN :desde AND :hasta";
+        $params = [
+            ':desde' => $fecha_desde,
+            ':hasta' => $fecha_hasta,
+        ];
 
-    $params = [
-        ':desde' => $fecha_desde,
-        ':hasta' => $fecha_hasta,
-    ];
+        if ($tipo_filtro !== "TODOS" && $tipo_filtro !== "") {
+            $sql .= " AND UPPER(tc.nombre_tipo) = :tipo";
+            $params[':tipo'] = strtoupper($tipo_filtro);
+        }
 
-    if ($tipo_filtro !== "TODOS" && $tipo_filtro !== "") {
-        $sql .= " AND UPPER(tc.nombre_tipo) = :tipo";
-        $params[':tipo'] = strtoupper($tipo_filtro);
+        $sql .= " ORDER BY c.fecha_compra ASC";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    $sql .= " ORDER BY c.fecha_compra ASC";
-
-    $stmt = $this->conexion->prepare($sql);
-    $stmt->execute($params);
-
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-
 }

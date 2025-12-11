@@ -5,8 +5,10 @@
     </div> <!-- row -->
 </div> <!-- container-fluid -->
 
-<footer class="text-center py-3 mt-4 border-top">
-    <small>&copy; <?php echo date("Y"); ?> Bazar Carolian - Sistema de inventario y ventas</small>
+<footer class="app-footer text-center py-3 mt-3">
+    <small class="text-muted">
+        &copy; <?php echo date("Y"); ?> Bazar Carolian - Sistema de inventario y ventas
+    </small>
 </footer>
 
 <!-- JS de Bootstrap -->

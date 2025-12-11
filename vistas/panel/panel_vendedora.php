@@ -93,170 +93,254 @@ include __DIR__ . "/../plantillas/menu_vendedora.php";
     $totalVencidos  = count($productosVencidos);
     ?>
 
-    <h3>Panel de vendedora</h3>
-    <p class="text-muted">
-        Resumen del sistema. Aquí se muestran alertas importantes de inventario
-        (stock bajo y caducidad), además de accesos rápidos a los módulos.
-    </p>
+    <!-- Título y descripción -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-1">Panel de vendedora</h3>
+            <p class="text-muted mb-0 small">
+                Resumen de inventario para las ventas diarias: stock, caducidad y accesos rápidos a los módulos.
+            </p>
+        </div>
+    </div>
 
     <!-- Tarjetas de resumen -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm border-start border-primary border-3">
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card card-metric h-100">
                 <div class="card-body">
-                    <h6 class="card-title">Productos con stock bajo</h6>
-                    <p class="display-6 mb-0"><?php echo $totalStockBajo; ?></p>
-                    <small class="text-muted">Stock actual ≤ stock mínimo</small>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="card-metric-title">Stock bajo</div>
+                            <div class="card-metric-value">
+                                <?php echo $totalStockBajo; ?>
+                            </div>
+                        </div>
+                        <div class="card-metric-icon">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Productos con stock actual ≤ stock mínimo.
+                    </small>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm border-start border-warning border-3">
+        <div class="col-md-4">
+            <div class="card card-metric h-100">
                 <div class="card-body">
-                    <h6 class="card-title">Por vencer (≤ 30 días)</h6>
-                    <p class="display-6 mb-0"><?php echo $totalPorVencer; ?></p>
-                    <small class="text-muted">Según fecha de caducidad</small>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="card-metric-title">Por vencer (≤ 30 días)</div>
+                            <div class="card-metric-value">
+                                <?php echo $totalPorVencer; ?>
+                            </div>
+                        </div>
+                        <div class="card-metric-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        Según fecha de caducidad registrada.
+                    </small>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm border-start border-danger border-3">
+        <div class="col-md-4">
+            <div class="card card-metric h-100">
                 <div class="card-body">
-                    <h6 class="card-title">Productos vencidos</h6>
-                    <p class="display-6 mb-0"><?php echo $totalVencidos; ?></p>
-                    <small class="text-muted">No deberían venderse</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title">Ventas / reportes</h6>
-                    <p class="card-text">Accesos rápidos a módulos principales.</p>
-                    <a href="panel_vendedora.php?modulo=ventas&accion=listar" class="btn btn-sm btn-primary">
-                        Ir a ventas
-                    </a>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <div class="card-metric-title">Productos vencidos</div>
+                            <div class="card-metric-value">
+                                <?php echo $totalVencidos; ?>
+                            </div>
+                        </div>
+                        <div class="card-metric-icon">
+                            <i class="bi bi-x-octagon"></i>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        No deberían venderse.
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Listados rápidos -->
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <h5>Productos con stock bajo</h5>
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Producto</th>
-                            <th>Categoría</th>
-                            <th>Stock</th>
-                            <th>Stock mínimo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if ($totalStockBajo > 0): ?>
-                        <?php foreach (array_slice($productosStockBajo, 0, 5) as $p): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($p["nombre_producto"]); ?></td>
-                                <td><?php echo htmlspecialchars($p["nombre_categoria"]); ?></td>
-                                <td><?php echo $p["stock_actual"]; ?></td>
-                                <td><?php echo $p["stock_minimo"]; ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="4" class="text-center">No hay productos con stock bajo.</td></tr>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
+    <div class="row g-3">
+        <!-- Stock bajo -->
+        <div class="col-md-6">
+            <div class="card card-table h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Productos con stock bajo</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0 table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Stock mínimo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php if ($totalStockBajo > 0): ?>
+                                <?php foreach (array_slice($productosStockBajo, 0, 5) as $p): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($p["nombre_producto"]); ?></td>
+                                        <td><?php echo htmlspecialchars($p["nombre_categoria"]); ?></td>
+                                        <td><?php echo $p["stock_actual"]; ?></td>
+                                        <td><?php echo $p["stock_minimo"]; ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        No hay productos con stock bajo.
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-6 mb-4">
-            <h5>Productos por vencer / vencidos</h5>
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Producto</th>
-                            <th>F. caducidad</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-                    $hoy = new DateTime();
-                    $listaCaducidad = array_merge($productosPorVencer, $productosVencidos);
-                    if (!empty($listaCaducidad)):
-                        foreach ($listaCaducidad as $p):
-                            $fechaV = new DateTime($p["fecha_caducidad"]);
-                            $dias = (int)$hoy->diff($fechaV)->format('%r%a');
-                            if ($dias < 0) {
-                                $textoEstado = "Vencido";
-                                $clase = "badge bg-danger";
-                            } elseif ($dias <= 30) {
-                                $textoEstado = "Por vencer";
-                                $clase = "badge bg-warning text-dark";
-                            } else {
-                                $textoEstado = "Vigente";
-                                $clase = "badge bg-success";
-                            }
-                    ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($p["nombre_producto"]); ?></td>
-                                <td><?php echo $fechaV->format("d/m/Y"); ?></td>
-                                <td><span class="<?php echo $clase; ?>"><?php echo $textoEstado; ?></span></td>
-                            </tr>
-                    <?php
-                        endforeach;
-                    else:
-                    ?>
-                        <tr><td colspan="3" class="text-center">No hay productos próximos a vencer.</td></tr>
-                    <?php endif; ?>
-                    </tbody>
-                </table>
+        <!-- Por vencer / vencidos -->
+        <div class="col-md-6">
+            <div class="card card-table h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">Productos por vencer / vencidos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0 table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>F. caducidad</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            <?php
+                            $hoy = new DateTime();
+                            $listaCaducidad = array_merge($productosPorVencer, $productosVencidos);
+                            if (!empty($listaCaducidad)):
+                                foreach ($listaCaducidad as $p):
+                                    $fechaV = new DateTime($p["fecha_caducidad"]);
+                                    $dias = (int)$hoy->diff($fechaV)->format('%r%a');
+                                    if ($dias < 0) {
+                                        $textoEstado = "Vencido";
+                                        $clase = "badge bg-danger";
+                                    } elseif ($dias <= 30) {
+                                        $textoEstado = "Por vencer";
+                                        $clase = "badge bg-warning text-dark";
+                                    } else {
+                                        $textoEstado = "Vigente";
+                                        $clase = "badge bg-success";
+                                    }
+                            ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($p["nombre_producto"]); ?></td>
+                                        <td><?php echo $fechaV->format("d/m/Y"); ?></td>
+                                        <td><span class="<?php echo $clase; ?>"><?php echo $textoEstado; ?></span></td>
+                                    </tr>
+                            <?php
+                                endforeach;
+                            else:
+                            ?>
+                                <tr>
+                                    <td colspan="3" class="text-center">
+                                        No hay productos próximos a vencer.
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Accesos rápidos a módulos (sin Usuarios) -->
-    <div class="row mt-3">
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title">Productos</h6>
-                    <p class="card-text">Control de inventario, precios y stock.</p>
-                    <a href="panel_vendedora.php?modulo=productos&accion=listar" class="btn btn-sm btn-primary">Ir</a>
+    <!-- Accesos rápidos (sin módulo Usuarios) -->
+    <div class="row g-3 mt-2">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h6 class="card-title mb-1">Productos</h6>
+                            <p class="card-text small text-muted mb-0">
+                                Control de inventario, precios y stock.
+                            </p>
+                        </div>
+                        <span class="card-metric-icon">
+                            <i class="bi bi-box-seam"></i>
+                        </span>
+                    </div>
+                    <a href="panel_vendedora.php?modulo=productos&accion=listar"
+                       class="btn btn-sm btn-outline-primary mt-2">
+                        Ir
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title">Ventas</h6>
-                    <p class="card-text">Registro de ventas y comprobantes.</p>
-                    <a href="panel_vendedora.php?modulo=ventas&accion=listar" class="btn btn-sm btn-primary">Ir</a>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h6 class="card-title mb-1">Ventas</h6>
+                            <p class="card-text small text-muted mb-0">
+                                Registro de ventas y comprobantes.
+                            </p>
+                        </div>
+                        <span class="card-metric-icon">
+                            <i class="bi bi-cash-stack"></i>
+                        </span>
+                    </div>
+                    <a href="panel_vendedora.php?modulo=ventas&accion=listar"
+                       class="btn btn-sm btn-outline-primary mt-2">
+                        Ir
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="card-title">Reportes</h6>
-                    <p class="card-text">Análisis de ventas y productos.</p>
-                    <a href="panel_vendedora.php?modulo=reportes&accion=listar" class="btn btn-sm btn-primary">Ir</a>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <h6 class="card-title mb-1">Reportes</h6>
+                            <p class="card-text small text-muted mb-0">
+                                Análisis de ventas y productos.
+                            </p>
+                        </div>
+                        <span class="card-metric-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </span>
+                    </div>
+                    <a href="panel_vendedora.php?modulo=reportes&accion=listar"
+                       class="btn btn-sm btn-outline-primary mt-2">
+                        Ir
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
 <?php elseif ($modulo === "productos"): ?>
+
 
     <?php
     require_once __DIR__ . "/../../controladores/ProductoControlador.php";

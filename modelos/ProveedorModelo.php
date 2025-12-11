@@ -19,48 +19,68 @@ class ProveedorModelo extends Conexion
     /* =========================================
        LISTAR PROVEEDORES (con búsqueda simple)
        ========================================= */
-    public function obtenerProveedores($texto = "")
+    public function obtenerProveedores(string $texto = ""): array
     {
-        $sql = "SELECT *
-                FROM tb_proveedores
-                WHERE 1 = 1";
+        $texto = trim($texto);
 
-        $params = [];
+        if ($texto === "") {
+            // Sin filtro
+            $sql = "SELECT *
+                    FROM tb_proveedores
+                    ORDER BY razon_social ASC";
 
-        if ($texto !== "") {
-            $sql .= " AND (
-                        razon_social LIKE :texto
-                        OR nombre_contacto LIKE :texto
-                        OR numero_documento LIKE :texto
-                        OR telefono LIKE :texto
-                        OR correo LIKE :texto
-                    )";
-            $params[":texto"] = "%{$texto}%";
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
+        } else {
+            // Con filtro de búsqueda (usamos ? ? ? para evitar HY093)
+            $sql = "SELECT *
+                    FROM tb_proveedores
+                    WHERE
+                        razon_social     LIKE ?
+                        OR nombre_contacto   LIKE ?
+                        OR numero_documento  LIKE ?
+                        OR telefono          LIKE ?
+                        OR correo            LIKE ?
+                    ORDER BY razon_social ASC";
+
+            $stmt = $this->conexion->prepare($sql);
+
+            $patron = '%' . $texto . '%';
+
+            // 5 ? en el SQL → 5 valores en el array
+            $stmt->execute([
+                $patron, // razon_social
+                $patron, // nombre_contacto
+                $patron, // numero_documento
+                $patron, // telefono
+                $patron, // correo
+            ]);
         }
 
-        $sql .= " ORDER BY razon_social ASC";
-
-        $stmt = $this->conexion->prepare($sql);
-        $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /* =========================================
        OBTENER UNO
        ========================================= */
-    public function obtenerPorId($id)
+    public function obtenerPorId(int $id): ?array
     {
-        $sql = "SELECT * FROM tb_proveedores WHERE id_proveedor = :id";
+        $sql = "SELECT *
+                FROM tb_proveedores
+                WHERE id_proveedor = :id";
+
         $stmt = $this->conexion->prepare($sql);
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $fila ?: null;
     }
 
     /* =========================================
        INSERTAR
        ========================================= */
-    public function insertar($data)
+    public function insertar(array $data)
     {
         $this->ultimoError = "";
 
@@ -96,7 +116,7 @@ class ProveedorModelo extends Conexion
     /* =========================================
        ACTUALIZAR
        ========================================= */
-    public function actualizar($id, $data)
+    public function actualizar(int $id, array $data): bool
     {
         $this->ultimoError = "";
 
@@ -133,11 +153,12 @@ class ProveedorModelo extends Conexion
     /* =========================================
        CAMBIAR ESTADO (activar / desactivar)
        ========================================= */
-    public function cambiarEstado($id, $estado)
+    public function cambiarEstado(int $id, int $estado): bool
     {
         $sql = "UPDATE tb_proveedores
                 SET estado = :estado
                 WHERE id_proveedor = :id";
+
         $stmt = $this->conexion->prepare($sql);
         return $stmt->execute([
             ":estado" => (int)$estado,

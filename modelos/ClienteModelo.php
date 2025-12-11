@@ -9,45 +9,66 @@ class ClienteModelo extends Conexion
         parent::__construct();
     }
 
-    // Ahora acepta un orden opcional: ASC o DESC
-    public function obtenerClientes($buscar = "", $orden = "DESC")
+    // Listar clientes con búsqueda y orden (ASC / DESC)
+    public function obtenerClientes(string $buscar = "", string $orden = "DESC"): array
     {
-        $orden = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+        $orden  = strtoupper($orden) === "ASC" ? "ASC" : "DESC";
+        $buscar = trim($buscar);
 
         if ($buscar === "") {
-            $sql = "SELECT * FROM tb_clientes ORDER BY id_cliente $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $consulta->execute();
+            // Sin filtro de búsqueda
+            $sql = "SELECT *
+                    FROM tb_clientes
+                    ORDER BY id_cliente $orden";
+
+            $stmt = $this->conexion->prepare($sql);
+            $stmt->execute();
         } else {
+            // Con filtro de búsqueda (usamos ? ? ? para evitar HY093)
             $sql = "SELECT *
                     FROM tb_clientes
                     WHERE
-                        numero_documento LIKE :buscar
-                        OR nombres LIKE :buscar
-                        OR apellidos LIKE :buscar
-                        OR razon_social LIKE :buscar
-                        OR correo LIKE :buscar
-                        OR telefono LIKE :buscar
+                        numero_documento LIKE ?
+                        OR nombres        LIKE ?
+                        OR apellidos      LIKE ?
+                        OR razon_social   LIKE ?
+                        OR correo         LIKE ?
+                        OR telefono       LIKE ?
                     ORDER BY id_cliente $orden";
-            $consulta = $this->conexion->prepare($sql);
-            $patron = "%" . $buscar . "%";
-            $consulta->bindParam(":buscar", $patron, PDO::PARAM_STR);
-            $consulta->execute();
+
+            $stmt = $this->conexion->prepare($sql);
+
+            $patron = '%' . $buscar . '%';
+
+            // 6 ? en el SQL → 6 valores en el array
+            $stmt->execute([
+                $patron, // numero_documento
+                $patron, // nombres
+                $patron, // apellidos
+                $patron, // razon_social
+                $patron, // correo
+                $patron, // telefono
+            ]);
         }
 
-        return $consulta->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function obtenerClientePorId($id_cliente)
+    public function obtenerClientePorId(int $id_cliente): ?array
     {
-        $sql = "SELECT * FROM tb_clientes WHERE id_cliente = :id";
-        $consulta = $this->conexion->prepare($sql);
-        $consulta->bindParam(":id", $id_cliente, PDO::PARAM_INT);
-        $consulta->execute();
-        return $consulta->fetch(PDO::FETCH_ASSOC);
+        $sql = "SELECT *
+                FROM tb_clientes
+                WHERE id_cliente = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(":id", $id_cliente, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $fila ?: null;
     }
 
-    public function registrarCliente($datos)
+    public function registrarCliente(array $datos): bool
     {
         $sql = "INSERT INTO tb_clientes
                 (tipo_documento, numero_documento, nombres, apellidos,
@@ -55,8 +76,9 @@ class ClienteModelo extends Conexion
                 VALUES
                 (:tipo_documento, :numero_documento, :nombres, :apellidos,
                  :razon_social, :direccion, :correo, :telefono, :estado)";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
+
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
             ":tipo_documento"   => $datos["tipo_documento"],
             ":numero_documento" => $datos["numero_documento"],
             ":nombres"          => $datos["nombres"],
@@ -69,7 +91,7 @@ class ClienteModelo extends Conexion
         ]);
     }
 
-    public function actualizarCliente($datos)
+    public function actualizarCliente(array $datos): bool
     {
         $sql = "UPDATE tb_clientes
                 SET tipo_documento   = :tipo_documento,
@@ -81,8 +103,9 @@ class ClienteModelo extends Conexion
                     correo           = :correo,
                     telefono         = :telefono
                 WHERE id_cliente     = :id_cliente";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
+
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
             ":tipo_documento"   => $datos["tipo_documento"],
             ":numero_documento" => $datos["numero_documento"],
             ":nombres"          => $datos["nombres"],
@@ -95,26 +118,33 @@ class ClienteModelo extends Conexion
         ]);
     }
 
-    public function cambiarEstadoCliente($id_cliente, $estado)
+    public function cambiarEstadoCliente(int $id_cliente, int $estado): bool
     {
-        $sql = "UPDATE tb_clientes SET estado = :estado WHERE id_cliente = :id";
-        $consulta = $this->conexion->prepare($sql);
-        return $consulta->execute([
+        $sql = "UPDATE tb_clientes
+                SET estado = :estado
+                WHERE id_cliente = :id";
+
+        $stmt = $this->conexion->prepare($sql);
+        return $stmt->execute([
             ":estado" => $estado,
             ":id"     => $id_cliente,
         ]);
     }
 
     // Buscar cliente por número de documento (DNI o RUC)
-    public function obtenerClientePorDocumento($numero_documento) {
-    $sql = "SELECT * FROM tb_clientes
-            WHERE numero_documento = :doc
-              AND estado = 1
-            LIMIT 1";
-    $consulta = $this->conexion->prepare($sql);
-    $consulta->bindParam(':doc', $numero_documento, PDO::PARAM_STR);
-    $consulta->execute();
-    return $consulta->fetch(PDO::FETCH_ASSOC);
-    }
+    public function obtenerClientePorDocumento(string $numero_documento): ?array
+    {
+        $sql = "SELECT *
+                FROM tb_clientes
+                WHERE numero_documento = :doc
+                  AND estado = 1
+                LIMIT 1";
 
+        $stmt = $this->conexion->prepare($sql);
+        $stmt->bindParam(':doc', $numero_documento, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $fila = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $fila ?: null;
+    }
 }

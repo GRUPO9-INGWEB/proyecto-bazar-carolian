@@ -5,14 +5,27 @@ if (!isset($mensaje)) {
     $mensaje = "";
 }
 ?>
-<h3>Nueva venta</h3>
-<p class="text-muted">
-    Registre una nueva venta seleccionando el cliente, el comprobante
-    y los productos vendidos.
-</p>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">
+            <i class="bi bi-cash-coin me-2"></i>
+            Nueva venta
+        </h3>
+        <p class="text-muted small mb-0">
+            Registre una nueva venta seleccionando el cliente, el comprobante
+            y los productos vendidos.
+        </p>
+    </div>
+
+    <a href="panel_admin.php?modulo=ventas&accion=listar"
+       class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Volver al listado
+    </a>
+</div>
 
 <?php if (!empty($mensaje)): ?>
-    <div class="alert alert-warning">
+    <div class="alert alert-warning mb-3">
         <?php echo htmlspecialchars($mensaje); ?>
     </div>
 <?php endif; ?>
@@ -22,12 +35,15 @@ if (!isset($mensaje)) {
       id="form-venta">
 
     <!-- CABECERA -->
-    <div class="card mb-4">
-        <div class="card-header">Datos del comprobante</div>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="bi bi-receipt-cutoff"></i>
+            <span>Datos del comprobante</span>
+        </div>
         <div class="card-body row g-3">
 
             <div class="col-md-3">
-                <label class="form-label form-label-sm">Tipo de comprobante</label>
+                <label class="form-label small text-muted mb-1">Tipo de comprobante</label>
                 <select name="id_tipo_comprobante"
                         id="tipoComprobanteSelect"
                         class="form-select form-select-sm" required>
@@ -41,7 +57,7 @@ if (!isset($mensaje)) {
             </div>
 
             <div class="col-md-3">
-                <label class="form-label form-label-sm">Serie</label>
+                <label class="form-label small text-muted mb-1">Serie</label>
                 <input type="text" name="serie_comprobante"
                        id="serieComprobante"
                        class="form-control form-control-sm"
@@ -50,7 +66,7 @@ if (!isset($mensaje)) {
             </div>
 
             <div class="col-md-3">
-                <label class="form-label form-label-sm">Número</label>
+                <label class="form-label small text-muted mb-1">Número</label>
                 <input type="text" name="numero_comprobante"
                        id="numeroComprobante"
                        class="form-control form-control-sm"
@@ -59,7 +75,7 @@ if (!isset($mensaje)) {
             </div>
 
             <div class="col-md-3">
-                <label class="form-label form-label-sm">Tipo de pago</label>
+                <label class="form-label small text-muted mb-1">Tipo de pago</label>
                 <select name="tipo_pago"
                         id="tipoPagoSelect"
                         class="form-select form-select-sm">
@@ -70,9 +86,9 @@ if (!isset($mensaje)) {
                 </select>
             </div>
 
-            <!-- MONTO RECIBIDO (solo para efectivo, el JS lo oculta/muestra) -->
+            <!-- MONTO RECIBIDO (solo efectivo) -->
             <div class="col-md-3" id="grupoMontoEfectivo">
-                <label class="form-label form-label-sm">Monto recibido (efectivo)</label>
+                <label class="form-label small text-muted mb-1">Monto recibido (efectivo)</label>
                 <input type="number"
                        step="0.01"
                        min="0"
@@ -87,14 +103,14 @@ if (!isset($mensaje)) {
 
             <div class="col-md-3 d-flex align-items-end" id="grupoVuelto">
                 <div>
-                    <strong>Vuelto:</strong><br>
-                    S/ <span id="vuelto_general">0.00</span>
+                    <div class="text-muted extra-small mb-1">Vuelto</div>
+                    <strong>S/ <span id="vuelto_general">0.00</span></strong>
                 </div>
             </div>
 
-            <!-- Cliente (grupo completo, lo ocultamos para ticket) -->
+            <!-- Cliente -->
             <div class="col-md-6" id="grupoCliente">
-                <label class="form-label form-label-sm">Cliente</label>
+                <label class="form-label small text-muted mb-1">Cliente</label>
                 <select name="id_cliente"
                         class="form-select form-select-sm"
                         id="selectCliente"
@@ -115,7 +131,7 @@ if (!isset($mensaje)) {
                     <?php endforeach; ?>
                 </select>
                 <small class="text-muted d-block mt-1">
-                    Para <strong>Boleta</strong> suele usarse DNI. Para <strong>Factura</strong>, RUC con razón social.
+                    Para <strong>Boleta</strong> suele usarse DNI; para <strong>Factura</strong>, RUC con razón social.
                 </small>
             </div>
 
@@ -123,16 +139,19 @@ if (!isset($mensaje)) {
     </div>
 
     <!-- DETALLE -->
-    <div class="card mb-4">
-        <div class="card-header">
-            Detalle de productos
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="bi bi-box-seam"></i>
+            <span>Detalle de productos</span>
         </div>
         <div class="card-body">
 
             <!-- Buscador de productos -->
             <div class="mb-3">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text">🔍</span>
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
                     <input type="text"
                            id="buscadorProducto"
                            class="form-control"
@@ -150,8 +169,8 @@ if (!isset($mensaje)) {
             </div>
 
             <div class="table-responsive">
-                <table class="table table-sm align-middle" id="tabla-detalle">
-                    <thead class="table-light">
+                <table class="table table-sm align-middle table-modern" id="tabla-detalle">
+                    <thead>
                     <tr>
                         <th style="width: 40%;">Producto</th>
                         <th style="width: 10%;">Stock</th>
@@ -193,13 +212,13 @@ if (!isset($mensaje)) {
     <input type="hidden" name="vuelto" id="vuelto_input">
 
     <!-- BOTONES -->
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-end gap-2 mb-3">
         <a href="panel_admin.php?modulo=ventas&accion=listar"
            class="btn btn-outline-secondary">
-            Volver
+            Cancelar
         </a>
         <button type="submit" class="btn btn-primary">
-            Guardar venta
+            <i class="bi bi-check2-circle me-1"></i> Guardar venta
         </button>
     </div>
 </form>
@@ -287,44 +306,41 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectCliente = document.getElementById('selectCliente');
 
     function actualizarSerieYClientePorTipo() {
-    const opt = selectTipo.selectedOptions[0];
-    if (!opt) {
-        inputSerie.value  = "";
-        inputNumero.value = "";            // ✅ dejamos vacío, sólo se ve el placeholder
-        grupoCliente.style.display = '';
-        selectCliente.required = true;
-        return;
+        const opt = selectTipo.selectedOptions[0];
+        if (!opt) {
+            inputSerie.value  = "";
+            inputNumero.value = "";
+            grupoCliente.style.display = '';
+            selectCliente.required = true;
+            return;
+        }
+        const texto = (opt.textContent || "").toUpperCase();
+
+        if (texto.includes('FACTURA')) {
+            inputSerie.value = 'F001';
+        } else if (texto.includes('BOLETA')) {
+            inputSerie.value = 'B001';
+        } else {
+            inputSerie.value = 'T001';
+        }
+
+        // Número vacío, el modelo genera el correlativo
+        inputNumero.value = "";
+
+        if (texto.includes('TICKET')) {
+            grupoCliente.style.display = 'none';
+            selectCliente.required = false;
+            selectCliente.value = '';
+        } else {
+            grupoCliente.style.display = '';
+            selectCliente.required = true;
+        }
     }
-    const texto = (opt.textContent || "").toUpperCase();
-
-    if (texto.includes('FACTURA')) {
-        inputSerie.value = 'F001';
-    } else if (texto.includes('BOLETA')) {
-        inputSerie.value = 'B001';
-    } else {
-        // Ticket u otro
-        inputSerie.value = 'T001';
-    }
-
-    // el número SIEMPRE va vacío, el modelo genera el correlativo
-    inputNumero.value = "";                // ✅ importante
-
-    // Si es TICKET, ocultamos cliente
-    if (texto.includes('TICKET')) {
-        grupoCliente.style.display = 'none';
-        selectCliente.required = false;
-        selectCliente.value = '';
-    } else {
-        grupoCliente.style.display = '';
-        selectCliente.required = true;
-    }
-}
-
 
     selectTipo.addEventListener('change', actualizarSerieYClientePorTipo);
     actualizarSerieYClientePorTipo();
 
-    /* ====== TIPO DE PAGO: EFECTIVO MUESTRA MONTO Y VUELTO ====== */
+    /* ====== TIPO DE PAGO: EFECTIVO ====== */
     const selectPago         = document.getElementById('tipoPagoSelect');
     const grupoMontoEfectivo = document.getElementById('grupoMontoEfectivo');
     const montoRecibidoInput = document.getElementById('montoRecibidoInput');
@@ -371,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function () {
         montoRecibidoInput.addEventListener('input', recalcularVuelto);
     }
 
-    /* ====== BUSCADOR DE CLIENTE POR DNI/RUC (si existe en el HTML) ====== */
+    /* ====== BUSCADOR DE CLIENTE (si existe campo documento) ====== */
     const inputDocCliente  = document.getElementById('buscarDocumentoCliente');
     const btnBuscarCliente = document.getElementById('btnBuscarCliente');
 
@@ -394,7 +410,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /* ====== DETALLE DE PRODUCTOS Y TOTALES ====== */
+    /* ====== DETALLE Y TOTALES ====== */
     const tbody        = document.getElementById('detalleTablaBody');
     const template     = document.getElementById('filaDetalleTemplate');
     const spanSubtotal = document.getElementById('subtotal_general');
